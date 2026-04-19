@@ -1,2 +1,4 @@
-package com.mnemosyne.app.ui.catalogo 
+package com.mnemosyne.app.ui.catalogo
 
+class CatalogoFragment {
+}

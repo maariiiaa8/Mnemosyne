@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1032389523847",
+    "project_id": "mnemosyne-b7937",
+    "storage_bucket": "mnemosyne-b7937.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032389523847:android:0cc7223ee0e713c29fbb22",
+        "android_client_info": {
+          "package_name": "com.mnemosyne.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSgGT-APk2k7CRQ0J8ZzZ_MfXLYBS8rsE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

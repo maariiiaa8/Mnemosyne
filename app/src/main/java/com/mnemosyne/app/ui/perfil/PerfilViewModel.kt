@@ -1,4 +1,4 @@
 package com.mnemosyne.app.ui.perfil
 
-class PerfilFragment {
+class PerfilViewModel {
 }

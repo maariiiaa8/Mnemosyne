@@ -1,4 +1,4 @@
 package com.mnemosyne.app.ui.catalogo
 
-class CatalogoFragment {
+class CatalogoScreen {
 }

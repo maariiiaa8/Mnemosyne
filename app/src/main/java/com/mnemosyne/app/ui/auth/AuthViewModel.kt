@@ -22,19 +22,35 @@ class AuthViewModel : ViewModel() {
     val registroState: LiveData<FirebaseResult<FirebaseUser>> = _registroState
 
     fun login(email: String, password: String) {
-        if (!validarCampos(email, password)) {
-            _loginState.value = FirebaseResult.Error("Rellena todos los campos")
-            return
+        // Validamos los campos localmente antes de hacer ninguna llamada a Firebase
+        // para evitar peticiones innecesarias y dar feedback inmediato al usuario
+        when {
+            email.isBlank() && password.isBlank() -> {
+                _loginState.value = FirebaseResult.Error("Rellena el correo y la contraseña")
+                return
+            }
+            email.isBlank() -> {
+                _loginState.value = FirebaseResult.Error("Introduce tu correo electrónico")
+                return
+            }
+            password.isBlank() -> {
+                _loginState.value = FirebaseResult.Error("Introduce tu contraseña")
+                return
+            }
         }
+        // Actualizamos el estado a Loading para mostrar el spinner en la UI
+        // mientras esperamos la respuesta de Firebase Authentication
         _loginState.value = FirebaseResult.Loading
         viewModelScope.launch {
+            // Llamamos al repositorio que gestiona la autenticación con Firebase
+            // y actualizamos el estado con el resultado (Success o Error)
             _loginState.value = repository.login(email, password)
         }
     }
 
     fun registro(nombre: String, email: String, password: String) {
         if (nombre.isBlank() || !validarCampos(email, password)) {
-            _registroState.value = FirebaseResult.Error("Rellena todos los campos")
+            _registroState.value = FirebaseResult.Error("Rellene todos los campos")
             return
         }
         _registroState.value = FirebaseResult.Loading

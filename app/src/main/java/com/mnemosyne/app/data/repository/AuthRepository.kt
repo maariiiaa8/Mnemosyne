@@ -35,4 +35,6 @@ class AuthRepository {
     fun usuarioActual(): FirebaseUser? {
         return auth.currentUser
     }
+
+    fun cerrarSesion() = auth.signOut()
 }

@@ -26,6 +26,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onCerrarSesion: () -> Unit,
+    onIrAExposiciones: () -> Unit,
+    onIrACarrito: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     val exposicionesState by viewModel.exposiciones.observeAsState()
@@ -80,14 +82,13 @@ fun HomeScreen(
 
                 NavigationDrawerItem(
                     label = {
-                        Text(
-                            "Exposiciones",
-                            letterSpacing = 2.sp,
-                            fontSize = 13.sp
-                        )
+                        Text("Exposiciones", letterSpacing = 2.sp, fontSize = 13.sp)
                     },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIrAExposiciones() 
+                    },
                     colors = NavigationDrawerItemDefaults.colors(
                         unselectedTextColor = TextoOscuro
                     ),
@@ -111,6 +112,21 @@ fun HomeScreen(
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                NavigationDrawerItem(
+                    label = {
+                        Text("Mi carrito", letterSpacing = 2.sp, fontSize = 13.sp)
+                    },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIrACarrito()
+                    },
+                    colors = NavigationDrawerItemDefaults.colors(
+                        unselectedTextColor = TextoOscuro
+                    ),
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
 
                 HorizontalDivider(
                     color = DoradoSuave,

@@ -8,5 +8,8 @@ data class Exposicion(
     val fechaFin: String = "",
     val imagenUrl: String = "",
     val destacada: Boolean = false,
-    val museoNombre: String = ""
+    val esPublica: Boolean = true,
+    val museoNombre: String = "",
+    val museoId: String = "",
+    val tiposEntrada: List<TipoEntrada> = emptyList()
 )

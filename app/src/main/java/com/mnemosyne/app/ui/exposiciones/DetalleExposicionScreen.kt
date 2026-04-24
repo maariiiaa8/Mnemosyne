@@ -1,0 +1,244 @@
+package com.mnemosyne.app.ui.exposiciones
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mnemosyne.app.data.model.Exposicion
+import com.mnemosyne.app.data.model.ItemCarrito
+import com.mnemosyne.app.data.model.TipoEntrada
+import com.mnemosyne.app.ui.carrito.CarritoViewModel
+import com.mnemosyne.app.ui.theme.*
+import com.mnemosyne.app.utils.FirebaseResult
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DetalleExposicionScreen(
+    exposicion: Exposicion,
+    onVolver: () -> Unit,
+    onIrCarrito: () -> Unit,
+    carritoViewModel: CarritoViewModel = viewModel()
+) {
+    val operacion by carritoViewModel.operacion.observeAsState()
+    var mensajeExito by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(operacion) {
+        if (operacion is FirebaseResult.Success) {
+            mensajeExito = "¡Añadido al carrito!"
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = exposicion.titulo.uppercase(),
+                        fontSize = 13.sp,
+                        letterSpacing = 2.sp,
+                        color = Crema
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onVolver) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Crema
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Burdeos)
+            )
+        },
+        containerColor = Superficie
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
+        ) {
+            // Info principal
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Crema),
+                    elevation = CardDefaults.cardElevation(3.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = exposicion.museoNombre.uppercase(),
+                            fontSize = 10.sp,
+                            letterSpacing = 2.sp,
+                            color = Dorado,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = exposicion.titulo,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = BurdeosOscuro
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = exposicion.descripcion,
+                            fontSize = 14.sp,
+                            color = TextoSuave,
+                            lineHeight = 20.sp
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        HorizontalDivider(color = DoradoSuave)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "${exposicion.fechaInicio}  —  ${exposicion.fechaFin}",
+                            fontSize = 12.sp,
+                            letterSpacing = 1.sp,
+                            color = TextoSuave
+                        )
+                    }
+                }
+            }
+
+            // Tipos de entrada (solo si no es pública)
+            if (!exposicion.esPublica && exposicion.tiposEntrada.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "— ENTRADAS —",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 3.sp,
+                        color = TextoSuave,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+
+                items(exposicion.tiposEntrada) { tipo ->
+                    TarjetaTipoEntrada(
+                        tipo = tipo,
+                        onAñadir = {
+                            carritoViewModel.añadirItem(
+                                ItemCarrito(
+                                    exposicionId      = exposicion.id,
+                                    exposicionTitulo  = exposicion.titulo,
+                                    museoNombre       = exposicion.museoNombre,
+                                    tipoEntradaNombre = tipo.nombre,
+                                    precio            = tipo.precio,
+                                    cantidad          = 1
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+
+            // Mensaje éxito + botón carrito
+            if (mensajeExito != null) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(2.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Dorado.copy(alpha = 0.2f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = mensajeExito!!,
+                                color = BurdeosOscuro,
+                                fontWeight = FontWeight.Medium
+                            )
+                            TextButton(onClick = onIrCarrito) {
+                                Text(
+                                    text = "Ver carrito →",
+                                    color = Burdeos,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TarjetaTipoEntrada(tipo: TipoEntrada, onAñadir: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(2.dp),
+        colors = CardDefaults.cardColors(containerColor = Crema),
+        elevation = CardDefaults.cardElevation(3.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tipo.nombre,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = BurdeosOscuro
+                )
+                Text(
+                    text = tipo.descripcion,
+                    fontSize = 12.sp,
+                    color = TextoSuave
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (tipo.precio == 0.0) "Gratuito"
+                    else "%.2f €".format(tipo.precio),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Burdeos
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Button(
+                onClick = onAñadir,
+                shape = RoundedCornerShape(2.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Burdeos,
+                    contentColor = Crema
+                )
+            ) {
+                Text(
+                    text = "+ AÑADIR",
+                    fontSize = 11.sp,
+                    letterSpacing = 2.sp
+                )
+            }
+        }
+    }
+}

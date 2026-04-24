@@ -63,6 +63,11 @@ class AuthViewModel : ViewModel() {
         return repository.usuarioActual() != null
     }
 
+    fun cerrarSesion() {
+        repository.cerrarSesion()
+        _loginState.value = null
+    }
+
     private fun validarCampos(email: String, password: String): Boolean {
         return email.isNotBlank() && password.isNotBlank()
     }

@@ -26,13 +26,17 @@ fun ExposicionesScreen(
     viewModel: ExposicionViewModel = viewModel()
 ) {
     val exposicionesState by viewModel.exposiciones.observeAsState()
-    val museos            by viewModel.museos.observeAsState(emptyList())
-    val museoFiltro       by viewModel.museoFiltro.observeAsState()
+    val museos by viewModel.museos.observeAsState(emptyList())
+    val museoFiltro by viewModel.museoFiltro.observeAsState()
 
+    val filtradas = remember(exposicionesState, museoFiltro) {
+        viewModel.exposicionesFiltradas()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Superficie)
+            .statusBarsPadding()
     ) {
         // ── Cabecera ─────────────────────────────────────
         Box(

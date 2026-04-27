@@ -85,6 +85,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onIrACarrito = {
                                 navController.navigate("carrito")
+                            },
+                            onIrANoticia = {
+                                navController.navigate("noticias")
                             }
                         )
                     }

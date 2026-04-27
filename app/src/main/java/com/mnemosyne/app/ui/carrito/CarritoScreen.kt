@@ -34,6 +34,8 @@ fun CarritoScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Superficie)
+            .statusBarsPadding()
+
     ) {
         // ── Cabecera ─────────────────────────────────────
         Box(

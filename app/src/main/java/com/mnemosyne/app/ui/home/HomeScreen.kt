@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     onCerrarSesion: () -> Unit,
     onIrAExposiciones: () -> Unit,
+    onIrANoticia: () -> Unit,
     onIrACarrito: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
@@ -87,7 +88,7 @@ fun HomeScreen(
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        onIrAExposiciones() 
+                        onIrAExposiciones()
                     },
                     colors = NavigationDrawerItemDefaults.colors(
                         unselectedTextColor = TextoOscuro
@@ -104,7 +105,10 @@ fun HomeScreen(
                         )
                     },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIrANoticia()
+                    },
                     colors = NavigationDrawerItemDefaults.colors(
                         unselectedTextColor = TextoOscuro
                     ),

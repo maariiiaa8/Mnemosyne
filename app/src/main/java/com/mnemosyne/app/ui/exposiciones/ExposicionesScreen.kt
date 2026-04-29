@@ -188,41 +188,13 @@ fun TarjetaExposicionDetalle(exposicion: Exposicion, onClick: () -> Unit) {
                 text = exposicion.titulo,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium,
-                color = BurdeosOscuro
+                color = BurdeosOscuro,
+                fontFamily = CinzelFamily
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = exposicion.descripcion,
-                fontSize = 13.sp,
-                color = TextoSuave,
-                lineHeight = 18.sp
-            )
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${exposicion.fechaInicio}  —  ${exposicion.fechaFin}",
-                    fontSize = 11.sp,
-                    letterSpacing = 1.sp,
-                    color = TextoSuave
-                )
-                if (!exposicion.esPublica) {
-                    Text(
-                        text = "Ver entradas →",
-                        fontSize = 11.sp,
-                        color = Burdeos,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                }
-            }
         }
     }
 }

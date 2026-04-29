@@ -22,6 +22,9 @@ import com.mnemosyne.app.data.model.TipoEntrada
 import com.mnemosyne.app.ui.carrito.CarritoViewModel
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +36,8 @@ fun DetalleExposicionScreen(
 ) {
     val operacion by carritoViewModel.operacion.observeAsState()
     var mensajeExito by remember { mutableStateOf<String?>(null) }
-
+    val listState = rememberLazyListState()
+    val scope     = rememberCoroutineScope()
     LaunchedEffect(operacion) {
         if (operacion is FirebaseResult.Success) {
             mensajeExito = "¡Añadido al carrito!"
@@ -66,6 +70,7 @@ fun DetalleExposicionScreen(
         containerColor = Superficie
     ) { innerPadding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -89,10 +94,39 @@ fun DetalleExposicionScreen(
                             color = Dorado,
                             fontWeight = FontWeight.Bold
                         )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${exposicion.fechaInicio}  —  ${exposicion.fechaFin}",
+                                fontSize = 11.sp,
+                                letterSpacing = 1.sp,
+                                color = TextoSuave
+                            )
+                            if (!exposicion.esPublica) {
+                                Text(
+                                    text = "Ver entradas →",
+                                    fontSize = 11.sp,
+                                    color = Burdeos,
+                                    fontFamily = CinzelFamily,
+
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp,
+                                    modifier = Modifier.clickable {
+                                        scope.launch { listState.animateScrollToItem(1) }
+                                    }
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = exposicion.titulo,
                             fontSize = 20.sp,
+                            fontFamily = CinzelFamily,
+
                             fontWeight = FontWeight.Medium,
                             color = BurdeosOscuro
                         )
@@ -105,13 +139,8 @@ fun DetalleExposicionScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         HorizontalDivider(color = DoradoSuave)
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "${exposicion.fechaInicio}  —  ${exposicion.fechaFin}",
-                            fontSize = 12.sp,
-                            letterSpacing = 1.sp,
-                            color = TextoSuave
-                        )
+
+
                     }
                 }
             }
@@ -125,6 +154,7 @@ fun DetalleExposicionScreen(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 3.sp,
                         color = TextoSuave,
+                        fontFamily = CinzelFamily,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp),
@@ -172,6 +202,7 @@ fun DetalleExposicionScreen(
                                 text = mensajeExito!!,
                                 color = BurdeosOscuro,
                                 fontWeight = FontWeight.Medium
+
                             )
                             TextButton(onClick = onIrCarrito) {
                                 Text(

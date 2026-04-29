@@ -281,13 +281,6 @@ fun TarjetaExposicion(exposicion: Exposicion) {
                 fontWeight = FontWeight.Medium,
                 color = BurdeosOscuro
             )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = exposicion.descripcion,
-                fontSize = 13.sp,
-                color = TextoSuave,
-                lineHeight = 18.sp
-            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "${exposicion.fechaInicio}  —  ${exposicion.fechaFin}",
@@ -321,13 +314,6 @@ fun TarjetaNoticia(noticia: Noticia) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = BurdeosOscuro
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = noticia.contenido,
-                fontSize = 13.sp,
-                color = TextoSuave,
-                lineHeight = 18.sp
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(

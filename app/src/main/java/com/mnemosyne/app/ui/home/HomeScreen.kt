@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mnemosyne.app.data.model.Exposicion
 import com.mnemosyne.app.data.model.Noticia
+import com.mnemosyne.app.data.model.Usuario
+import com.mnemosyne.app.ui.auth.AuthViewModel
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
 import kotlinx.coroutines.launch
@@ -31,22 +33,30 @@ fun HomeScreen(
     onIrACarrito: () -> Unit,
     viewModel: HomeViewModel = viewModel(),
     onIrAMuseos: () -> Unit,
-) {
+    onIrATienda: () -> Unit,
+    authViewModel: AuthViewModel = viewModel(),
+    ) {
     val exposicionesState by viewModel.exposiciones.observeAsState()
     val noticiasState     by viewModel.noticias.observeAsState()
+    val usuarioState by authViewModel.usuarioDatos.observeAsState()
     val drawerState       = rememberDrawerState(DrawerValue.Closed)
     val scope             = rememberCoroutineScope()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
+            val nombreUsuario = when (val state = usuarioState) {
+                is FirebaseResult.Success -> state.data.nombre
+                else -> "Invitado"
+            }
             ModalDrawerSheet(
                 drawerContainerColor = Crema
             ) {
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "MNEMOSYNE",
+                    text = "BIENVENID@ ${nombreUsuario.uppercase()}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 4.sp,
@@ -132,6 +142,22 @@ fun HomeScreen(
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                NavigationDrawerItem(
+                    label = {
+                        Text("Tienda", letterSpacing = 2.sp, fontSize = 13.sp)
+                    },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIrATienda()
+                    },
+                    colors = NavigationDrawerItemDefaults.colors(
+                        unselectedTextColor = TextoOscuro
+                    ),
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+
 
                 NavigationDrawerItem(
                     label = {

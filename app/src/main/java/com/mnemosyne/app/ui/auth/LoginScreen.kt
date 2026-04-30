@@ -25,6 +25,7 @@ import com.mnemosyne.app.R
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
 
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,

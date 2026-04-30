@@ -21,7 +21,8 @@ import com.mnemosyne.app.utils.FirebaseResult
 
 @Composable
 fun MuseosScreen(
-    onMuseoClick: (Museo) -> Unit,
+    onMuseoClick: (Museo) -> Unit
+    ,
     viewModel: MuseosViewModel = viewModel()
 ) {
     val museosState by viewModel.museos.observeAsState()

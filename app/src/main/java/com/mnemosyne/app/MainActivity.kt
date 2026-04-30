@@ -21,6 +21,7 @@ import com.mnemosyne.app.ui.home.HomeScreen
 import com.mnemosyne.app.ui.museos.MuseosScreen
 import com.mnemosyne.app.ui.theme.MnemosyneTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mnemosyne.app.ui.museos.DetalleMuseoScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,6 +94,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onIrAMuseos = {
                                 navController.navigate("museos")
+                            },
+                            onIrATienda = {
+                                navController.navigate("tienda")
                             }
                         )
                     }
@@ -108,9 +112,13 @@ class MainActivity : ComponentActivity() {
 
                     composable("detalle_museo") {
                         museoSeleccionado.value?.let { museo ->
-                            // DetalleMuseoScreen — lo creamos en el siguiente paso
+                            DetalleMuseoScreen(
+                                museo = museo,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
                     }
+
 
                     composable("exposiciones") {
                         ExposicionesScreen(

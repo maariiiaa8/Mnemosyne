@@ -22,44 +22,36 @@ class ExposicionRepository {
             for (museo in museos.documents) {
                 val expos = db.collection("museos")
                     .document(museo.id)
-                    .collection("exposicion")
+                    .collection("exposiciones")
                     .get()
                     .await()
 
                 for (doc in expos.documents) {
-                    // Cargamos los tipos de entrada de cada exposición
-                    val tiposSnapshot = db.collection("museos")
-                        .document(museo.id)
-                        .collection("exposicion")
-                        .document(doc.id)
-                        .collection("tiposEntrada")
-                        .get()
-                        .await()
+                    // Leemos tiposEntrada como array embebido en el documento
+                    @Suppress("UNCHECKED_CAST")
+                    val tiposRaw = doc.get("tiposEntrada") as? List<Map<String, Any>> ?: emptyList()
 
-                    val tiposEntrada = tiposSnapshot.documents.map { t ->
+                    val tiposEntrada = tiposRaw.map { t ->
                         TipoEntrada(
-                            id          = t.id,
-                            nombre      = t.getString("nombre") ?: "",
-                            descripcion = t.getString("descripcion") ?: "",
-                            precio      = t.getDouble("precio") ?: 0.0
+                            id          = t["id"] as? String ?: "",
+                            nombre      = t["nombre"] as? String ?: "",
+                            descripcion = t["descripcion"] as? String ?: "",
+                            precio      = (t["precio"] as? Number)?.toDouble() ?: 0.0
                         )
                     }
 
-                    val fechaInicio = parsearFecha(doc, "fechaInicio")
-                    val fechaFin    = parsearFecha(doc, "fechaFin")
-
                     exposiciones.add(
                         Exposicion(
-                            id          = doc.id,
-                            titulo      = doc.getString("titulo") ?: "",
-                            descripcion = doc.getString("descripcion") ?: "",
-                            fechaInicio = fechaInicio,
-                            fechaFin    = fechaFin,
-                            imagenUrl   = doc.getString("imagenUrl") ?: "",
-                            destacada   = doc.getBoolean("destacada") ?: false,
-                            esPublica   = doc.getBoolean("esPublica") ?: true,
-                            museoNombre = doc.getString("museoNombre") ?: "",
-                            museoId     = museo.id,
+                            id           = doc.id,
+                            titulo       = doc.getString("titulo") ?: "",
+                            descripcion  = doc.getString("descripcion") ?: "",
+                            fechaInicio  = parsearFecha(doc, "fechaInicio"),
+                            fechaFin     = parsearFecha(doc, "fechaFin"),
+                            imagenUrl    = doc.getString("imagenUrl") ?: "",
+                            destacada    = doc.getBoolean("destacada") ?: false,
+                            esPublica    = doc.getBoolean("esPublica") ?: true,
+                            museoNombre  = doc.getString("museoNombre") ?: "",
+                            museoId      = museo.id,
                             tiposEntrada = tiposEntrada
                         )
                     )

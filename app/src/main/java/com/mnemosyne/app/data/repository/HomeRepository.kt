@@ -24,7 +24,7 @@ class HomeRepository {
             for (museo in museos.documents) {
                 val expos = db.collection("museos")
                     .document(museo.id)
-                    .collection("exposicion")
+                    .collection("exposiciones")
                     .whereEqualTo("destacada", true)
                     .get()
                     .await()
@@ -65,7 +65,7 @@ class HomeRepository {
             for (museo in museos.documents) {
                 val news = db.collection("museos")
                     .document(museo.id)
-                    .collection("noticia")
+                    .collection("noticias")
                     .whereEqualTo("destacada", true)
                     .get()
                     .await()

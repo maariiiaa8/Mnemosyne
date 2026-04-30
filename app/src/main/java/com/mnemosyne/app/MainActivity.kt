@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mnemosyne.app.data.model.Exposicion
+import com.mnemosyne.app.data.model.Museo
 import com.mnemosyne.app.ui.auth.AuthViewModel
 import com.mnemosyne.app.ui.auth.LoginScreen
 import com.mnemosyne.app.ui.auth.RegistroScreen
@@ -17,6 +18,7 @@ import com.mnemosyne.app.ui.carrito.CarritoScreen
 import com.mnemosyne.app.ui.exposiciones.DetalleExposicionScreen
 import com.mnemosyne.app.ui.exposiciones.ExposicionesScreen
 import com.mnemosyne.app.ui.home.HomeScreen
+import com.mnemosyne.app.ui.museos.MuseosScreen
 import com.mnemosyne.app.ui.theme.MnemosyneTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -28,8 +30,8 @@ class MainActivity : ComponentActivity() {
             MnemosyneTheme {
                 val navController = rememberNavController()
 
-                // Exposición seleccionada compartida entre pantallas
                 var exposicionSeleccionada = remember { androidx.compose.runtime.mutableStateOf<Exposicion?>(null) }
+                var museoSeleccionado = remember { androidx.compose.runtime.mutableStateOf<Museo?>(null) }
 
                 NavHost(
                     navController = navController,
@@ -88,8 +90,26 @@ class MainActivity : ComponentActivity() {
                             },
                             onIrANoticia = {
                                 navController.navigate("noticias")
+                            },
+                            onIrAMuseos = {
+                                navController.navigate("museos")
                             }
                         )
+                    }
+
+                    composable("museos") {
+                        MuseosScreen(
+                            onMuseoClick = { museo ->
+                                museoSeleccionado.value = museo
+                                navController.navigate("detalle_museo")
+                            }
+                        )
+                    }
+
+                    composable("detalle_museo") {
+                        museoSeleccionado.value?.let { museo ->
+                            // DetalleMuseoScreen — lo creamos en el siguiente paso
+                        }
                     }
 
                     composable("exposiciones") {
@@ -113,9 +133,7 @@ class MainActivity : ComponentActivity() {
 
                     composable("carrito") {
                         CarritoScreen(
-                            onPagar = {
-                                // Pago — lo implementamos después
-                            }
+                            onPagar = {}
                         )
                     }
                 }

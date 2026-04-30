@@ -29,7 +29,8 @@ fun HomeScreen(
     onIrAExposiciones: () -> Unit,
     onIrANoticia: () -> Unit,
     onIrACarrito: () -> Unit,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    onIrAMuseos: () -> Unit,
 ) {
     val exposicionesState by viewModel.exposiciones.observeAsState()
     val noticiasState     by viewModel.noticias.observeAsState()
@@ -94,6 +95,21 @@ fun HomeScreen(
                         unselectedTextColor = TextoOscuro
                     ),
                     modifier = Modifier.padding(horizontal = 12.dp)
+                )
+
+                NavigationDrawerItem(
+                        label = {
+                            Text("Museos", letterSpacing = 2.sp, fontSize = 13.sp)
+                        },
+                selected = false,
+                onClick = {
+                    scope.launch { drawerState.close() }
+                    onIrAMuseos()
+                },
+                colors = NavigationDrawerItemDefaults.colors(
+                    unselectedTextColor = TextoOscuro
+                ),
+                modifier = Modifier.padding(horizontal = 12.dp)
                 )
 
                 NavigationDrawerItem(

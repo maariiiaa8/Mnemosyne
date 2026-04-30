@@ -114,7 +114,9 @@ fun CarritoScreen(
 
                     // ── Resumen y botón pagar ─────────────────
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding(),
                         shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
                         colors = CardDefaults.cardColors(containerColor = Crema),
                         elevation = CardDefaults.cardElevation(8.dp)

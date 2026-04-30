@@ -1,5 +1,6 @@
 package com.mnemosyne.app.ui.exposiciones
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,9 +23,6 @@ import com.mnemosyne.app.data.model.TipoEntrada
 import com.mnemosyne.app.ui.carrito.CarritoViewModel
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.rememberLazyListState
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,11 +34,62 @@ fun DetalleExposicionScreen(
 ) {
     val operacion by carritoViewModel.operacion.observeAsState()
     var mensajeExito by remember { mutableStateOf<String?>(null) }
-    val listState = rememberLazyListState()
-    val scope     = rememberCoroutineScope()
+    var mostrarEntradas by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        Log.d("DEBUG", "esPublica=${exposicion.esPublica}, entradas=${exposicion.tiposEntrada.size}")
+    }
     LaunchedEffect(operacion) {
         if (operacion is FirebaseResult.Success) {
             mensajeExito = "¡Añadido al carrito!"
+        }
+    }
+
+    // ── Bottom Sheet de entradas ──────────────────────────
+    if (mostrarEntradas) {
+        ModalBottomSheet(
+            onDismissRequest = { mostrarEntradas = false },
+            containerColor = Superficie,
+            shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 32.dp)
+            ) {
+                Text(
+                    text = "— ENTRADAS —",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 3.sp,
+                    color = TextoSuave,
+                    fontFamily = CinzelFamily,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+
+                exposicion.tiposEntrada.forEach { tipo ->
+                    TarjetaTipoEntrada(
+                        tipo = tipo,
+                        onAñadir = {
+                            carritoViewModel.añadirItem(
+                                ItemCarrito(
+                                    exposicionId      = exposicion.id,
+                                    exposicionTitulo  = exposicion.titulo,
+                                    museoNombre       = exposicion.museoNombre,
+                                    tipoEntradaNombre = tipo.nombre,
+                                    precio            = tipo.precio,
+                                    cantidad          = 1
+                                )
+                            )
+                            mostrarEntradas = false
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
         }
     }
 
@@ -67,10 +116,38 @@ fun DetalleExposicionScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Burdeos)
             )
         },
-        containerColor = Superficie
+        containerColor = Superficie,
+        bottomBar = {
+            if (!exposicion.esPublica && exposicion.tiposEntrada.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Superficie)
+                        .navigationBarsPadding()
+                        .padding(16.dp)
+                ) {
+                    Button(
+                        onClick = { mostrarEntradas = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(2.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Burdeos,
+                            contentColor = Crema
+                        )
+                    ) {
+                        Text(
+                            text = "VER ENTRADAS",
+                            fontSize = 12.sp,
+                            letterSpacing = 3.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
     ) { innerPadding ->
         LazyColumn(
-            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -78,7 +155,7 @@ fun DetalleExposicionScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            // Info principal
+            // ── Info principal ────────────────────────────
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -106,27 +183,12 @@ fun DetalleExposicionScreen(
                                 letterSpacing = 1.sp,
                                 color = TextoSuave
                             )
-                            if (!exposicion.esPublica) {
-                                Text(
-                                    text = "Ver entradas →",
-                                    fontSize = 11.sp,
-                                    color = Burdeos,
-                                    fontFamily = CinzelFamily,
-
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 1.sp,
-                                    modifier = Modifier.clickable {
-                                        scope.launch { listState.animateScrollToItem(1) }
-                                    }
-                                )
-                            }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = exposicion.titulo,
                             fontSize = 20.sp,
                             fontFamily = CinzelFamily,
-
                             fontWeight = FontWeight.Medium,
                             color = BurdeosOscuro
                         )
@@ -139,49 +201,11 @@ fun DetalleExposicionScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         HorizontalDivider(color = DoradoSuave)
-
-
                     }
                 }
             }
 
-            // Tipos de entrada (solo si no es pública)
-            if (!exposicion.esPublica && exposicion.tiposEntrada.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "— ENTRADAS —",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 3.sp,
-                        color = TextoSuave,
-                        fontFamily = CinzelFamily,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-
-                items(exposicion.tiposEntrada) { tipo ->
-                    TarjetaTipoEntrada(
-                        tipo = tipo,
-                        onAñadir = {
-                            carritoViewModel.añadirItem(
-                                ItemCarrito(
-                                    exposicionId      = exposicion.id,
-                                    exposicionTitulo  = exposicion.titulo,
-                                    museoNombre       = exposicion.museoNombre,
-                                    tipoEntradaNombre = tipo.nombre,
-                                    precio            = tipo.precio,
-                                    cantidad          = 1
-                                )
-                            )
-                        }
-                    )
-                }
-            }
-
-            // Mensaje éxito + botón carrito
+            // ── Mensaje éxito + botón carrito ─────────────
             if (mensajeExito != null) {
                 item {
                     Card(
@@ -202,7 +226,6 @@ fun DetalleExposicionScreen(
                                 text = mensajeExito!!,
                                 color = BurdeosOscuro,
                                 fontWeight = FontWeight.Medium
-
                             )
                             TextButton(onClick = onIrCarrito) {
                                 Text(
@@ -238,6 +261,7 @@ fun TarjetaTipoEntrada(tipo: TipoEntrada, onAñadir: () -> Unit) {
                 Text(
                     text = tipo.nombre,
                     fontSize = 15.sp,
+                    fontFamily = CinzelFamily,
                     fontWeight = FontWeight.Medium,
                     color = BurdeosOscuro
                 )

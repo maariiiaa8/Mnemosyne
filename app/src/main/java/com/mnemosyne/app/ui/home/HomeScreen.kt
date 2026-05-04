@@ -1,6 +1,5 @@
 package com.mnemosyne.app.ui.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,7 +21,6 @@ import com.mnemosyne.app.data.model.Usuario
 import com.mnemosyne.app.ui.auth.AuthViewModel
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,8 +29,8 @@ fun HomeScreen(
     onIrAExposiciones: () -> Unit,
     onIrANoticia: () -> Unit,
     onIrACarrito: () -> Unit,
-    viewModel: HomeViewModel = viewModel(),
     onIrAMuseos: () -> Unit,
+<<<<<<< HEAD
     onIrATienda: () -> Unit,
     authViewModel: AuthViewModel = viewModel(),
     ) {
@@ -218,59 +216,80 @@ fun HomeScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Burdeos
+=======
+    onIrAPerfil: () -> Unit,
+    onAbrirMenu: () -> Unit,
+    viewModel: HomeViewModel = viewModel()
+) {
+    val exposicionesState by viewModel.exposiciones.observeAsState()
+    val noticiasState by viewModel.noticias.observeAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "INICIO",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Light,
+                        letterSpacing = 4.sp,
+                        color = Crema
+>>>>>>> MNE-PASARELA_DE_PAGO
                     )
-                )
-            },
-            containerColor = Superficie
-        ) { innerPadding ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp)
-            ) {
-                // ── Exposiciones destacadas ──────────────────
-                item {
-                    SeccionTitulo("EXPOSICIONES DESTACADAS")
-                }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onAbrirMenu) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Crema)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Burdeos)
+            )
+        },
+        containerColor = Superficie
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
+        ) {
+            item { SeccionTitulo("EXPOSICIONES DESTACADAS") }
 
-                when (val state = exposicionesState) {
-                    is FirebaseResult.Loading -> item {
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = Burdeos)
-                        }
+            when (val state = exposicionesState) {
+                is FirebaseResult.Loading -> item {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Burdeos)
                     }
-                    is FirebaseResult.Success -> items(state.data) { exposicion ->
-                        TarjetaExposicion(exposicion)
-                    }
-                    is FirebaseResult.Error -> item {
-                        Text(state.mensaje, color = MaterialTheme.colorScheme.error)
-                    }
-                    null -> {}
                 }
+                is FirebaseResult.Success -> items(state.data) { exposicion ->
+                    TarjetaExposicion(exposicion)
+                }
+                is FirebaseResult.Error -> item {
+                    Text(state.mensaje, color = MaterialTheme.colorScheme.error)
+                }
+                null -> {}
+            }
 
-                // ── Noticias destacadas ──────────────────────
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    SeccionTitulo("ÚLTIMAS NOTICIAS")
-                }
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                SeccionTitulo("ÚLTIMAS NOTICIAS")
+            }
 
-                when (val state = noticiasState) {
-                    is FirebaseResult.Loading -> item {
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = Burdeos)
-                        }
+            when (val state = noticiasState) {
+                is FirebaseResult.Loading -> item {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Burdeos)
                     }
-                    is FirebaseResult.Success -> items(state.data) { noticia ->
-                        TarjetaNoticia(noticia)
-                    }
-                    is FirebaseResult.Error -> item {
-                        Text(state.mensaje, color = MaterialTheme.colorScheme.error)
-                    }
-                    null -> {}
                 }
+                is FirebaseResult.Success -> items(state.data) { noticia ->
+                    TarjetaNoticia(noticia)
+                }
+                is FirebaseResult.Error -> item {
+                    Text(state.mensaje, color = MaterialTheme.colorScheme.error)
+                }
+                null -> {}
             }
         }
     }
@@ -282,10 +301,7 @@ fun SeccionTitulo(texto: String) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = DoradoSuave
-        )
+        HorizontalDivider(modifier = Modifier.weight(1f), color = DoradoSuave)
         Text(
             text = "  $texto  ",
             fontSize = 11.sp,
@@ -293,10 +309,7 @@ fun SeccionTitulo(texto: String) {
             letterSpacing = 2.sp,
             color = TextoSuave
         )
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = DoradoSuave
-        )
+        HorizontalDivider(modifier = Modifier.weight(1f), color = DoradoSuave)
     }
 }
 

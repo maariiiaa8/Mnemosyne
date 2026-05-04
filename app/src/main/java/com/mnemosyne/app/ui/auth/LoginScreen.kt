@@ -49,7 +49,6 @@ fun LoginScreen(
             .background(Superficie),
         contentAlignment = Alignment.Center
     ) {
-        // ── Líneas decorativas griegas arriba y abajo ──
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
@@ -81,7 +80,7 @@ fun LoginScreen(
                         modifier = Modifier.padding(bottom = 12.dp))
 
                     Text(
-                        text = "inicio de sesión",
+                        text = "Inicio de sesión",
                         fontSize = 23.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 3.sp,

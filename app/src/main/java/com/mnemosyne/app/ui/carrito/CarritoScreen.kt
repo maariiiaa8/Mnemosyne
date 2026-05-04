@@ -1,5 +1,6 @@
 package com.mnemosyne.app.ui.carrito
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,24 +21,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mnemosyne.app.data.model.ItemCarrito
+import com.mnemosyne.app.ui.compra.CompraViewModel
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
+import com.stripe.android.paymentsheet.PaymentSheetContract
+import com.stripe.android.paymentsheet.PaymentSheetResult
 
 @Composable
 fun CarritoScreen(
     onPagar: () -> Unit,
-    viewModel: CarritoViewModel = viewModel()
+    onPagoCompletado: () -> Unit,
+    viewModel: CarritoViewModel = viewModel(),
+    compraViewModel: CompraViewModel = viewModel()
 ) {
     val itemsState by viewModel.items.observeAsState()
+    val clientSecret by compraViewModel.clientSecret.collectAsState()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = PaymentSheetContract()
+    ) { result ->
+        when (result) {
+            is PaymentSheetResult.Completed -> onPagoCompletado()
+            is PaymentSheetResult.Failed -> compraViewModel.onError(result.error.message ?: "Error")
+            is PaymentSheetResult.Canceled -> {}
+        }
+    }
+
+    LaunchedEffect(clientSecret) {
+        clientSecret?.let { secret ->
+            launcher.launch(
+                PaymentSheetContract.Args.createPaymentIntentArgs(secret)
+            )
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Superficie)
             .statusBarsPadding()
-
     ) {
-        // ── Cabecera ─────────────────────────────────────
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,14 +86,9 @@ fun CarritoScreen(
 
             is FirebaseResult.Success -> {
                 if (state.data.isEmpty()) {
-                    // Carrito vacío
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "✦",
-                                fontSize = 32.sp,
-                                color = DoradoSuave
-                            )
+                            Text(text = "✦", fontSize = 32.sp, color = DoradoSuave)
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = "Tu carrito está vacío",
@@ -112,7 +130,6 @@ fun CarritoScreen(
                         }
                     }
 
-                    // ── Resumen y botón pagar ─────────────────
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -244,7 +261,6 @@ fun TarjetaItemCarrito(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Precio unitario x cantidad
                 Text(
                     text = "%.2f € × %d = %.2f €".format(
                         item.precio, item.cantidad, item.precio * item.cantidad
@@ -254,17 +270,9 @@ fun TarjetaItemCarrito(
                     color = Burdeos
                 )
 
-                // Selector de cantidad
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onDecrementar,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Remove,
-                            contentDescription = "Restar",
-                            tint = Burdeos
-                        )
+                    IconButton(onClick = onDecrementar, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Remove, contentDescription = "Restar", tint = Burdeos)
                     }
                     Text(
                         text = item.cantidad.toString(),
@@ -274,15 +282,8 @@ fun TarjetaItemCarrito(
                         modifier = Modifier.widthIn(min = 24.dp),
                         textAlign = TextAlign.Center
                     )
-                    IconButton(
-                        onClick = onIncrementar,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Sumar",
-                            tint = Burdeos
-                        )
+                    IconButton(onClick = onIncrementar, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Add, contentDescription = "Sumar", tint = Burdeos)
                     }
                 }
             }

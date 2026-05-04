@@ -1,14 +1,17 @@
 package com.mnemosyne.app.data.repository
 
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
-import kotlinx.coroutines.tasks.await
 import com.mnemosyne.app.utils.FirebaseResult
+import kotlinx.coroutines.tasks.await
 
 class AuthRepository {
 
     private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
 
     suspend fun login(email: String, password: String): FirebaseResult<FirebaseUser> {
         return try {
@@ -22,15 +25,32 @@ class AuthRepository {
     suspend fun registro(nombre: String, email: String, password: String): FirebaseResult<FirebaseUser> {
         return try {
             val result = auth.createUserWithEmailAndPassword(email, password).await()
+            val user = result.user!!
+
+            // Actualizar displayName en Auth
             val profileUpdates = UserProfileChangeRequest.Builder()
                 .setDisplayName(nombre)
                 .build()
-            result.user!!.updateProfile(profileUpdates).await()
-            FirebaseResult.Success(result.user!!)
+            user.updateProfile(profileUpdates).await()
+
+            // Crear documento en Firestore
+            val datosUsuario = hashMapOf(
+                "nombre"        to nombre,
+                "email"         to email,
+                "fotoPerfil"    to "",
+                "fechaRegistro" to Timestamp.now()
+            )
+            db.collection("usuarios")
+                .document(user.uid)
+                .set(datosUsuario)
+                .await()
+
+            FirebaseResult.Success(user)
         } catch (e: Exception) {
             FirebaseResult.Error(e.message ?: "Error al registrarse")
         }
     }
+
 
     fun usuarioActual(): FirebaseUser? {
         return auth.currentUser

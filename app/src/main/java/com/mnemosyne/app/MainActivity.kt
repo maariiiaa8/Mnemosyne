@@ -21,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.mnemosyne.app.data.model.Exposicion
 import com.mnemosyne.app.data.model.Museo
+import com.mnemosyne.app.data.model.Noticia
 import com.mnemosyne.app.ui.auth.AuthViewModel
 import com.mnemosyne.app.ui.auth.LoginScreen
 import com.mnemosyne.app.ui.auth.RegistroScreen
@@ -33,6 +34,8 @@ import com.mnemosyne.app.ui.exposiciones.ExposicionesScreen
 import com.mnemosyne.app.ui.home.HomeScreen
 import com.mnemosyne.app.ui.museos.DetalleMuseoScreen
 import com.mnemosyne.app.ui.museos.MuseosScreen
+import com.mnemosyne.app.ui.noticias.DetallesNoticiasScreen
+import com.mnemosyne.app.ui.noticias.NoticiasScreen
 import com.mnemosyne.app.ui.perfil.EditarPerfilScreen
 import com.mnemosyne.app.ui.perfil.MisEntradasScreen
 import com.mnemosyne.app.ui.perfil.PerfilScreen
@@ -54,6 +57,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val exposicionSeleccionada = remember { mutableStateOf<Exposicion?>(null) }
                 val museoSeleccionado = remember { mutableStateOf<Museo?>(null) }
+                val noticiaSeleccionada = remember { mutableStateOf<Noticia?>(null) }
                 val authViewModel: AuthViewModel = viewModel()
                 val drawerState = rememberDrawerState(DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
@@ -135,6 +139,21 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(horizontal = 12.dp)
                                 )
 
+                                NavigationDrawerItem(
+                                    label = { Text("Noticias", letterSpacing = 2.sp, fontSize = 13.sp) },
+                                    selected = rutaActual == "noticias",
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate("noticias")
+                                    },
+                                    colors = NavigationDrawerItemDefaults.colors(
+                                        selectedContainerColor = CremaOscura,
+                                        selectedTextColor = BurdeosOscuro,
+                                        unselectedTextColor = TextoOscuro
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 12.dp)
+                                )
+
                                 Spacer(modifier = Modifier.weight(1f))
 
                                 NavigationDrawerItem(
@@ -197,6 +216,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             exposicionSeleccionada = exposicionSeleccionada,
                             museoSeleccionado = museoSeleccionado,
+                            noticiaSeleccionada = noticiaSeleccionada,
                             authViewModel = authViewModel,
                             onAbrirMenu = { scope.launch { drawerState.open() } }
                         )
@@ -206,6 +226,7 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         exposicionSeleccionada = exposicionSeleccionada,
                         museoSeleccionado = museoSeleccionado,
+                        noticiaSeleccionada = noticiaSeleccionada,
                         authViewModel = authViewModel,
                         onAbrirMenu = {}
                     )
@@ -220,6 +241,7 @@ fun AppNavHost(
     navController: androidx.navigation.NavHostController,
     exposicionSeleccionada: androidx.compose.runtime.MutableState<Exposicion?>,
     museoSeleccionado: androidx.compose.runtime.MutableState<Museo?>,
+    noticiaSeleccionada: androidx.compose.runtime.MutableState<Noticia?>,
     authViewModel: AuthViewModel,
     onAbrirMenu: () -> Unit
 ) {
@@ -307,6 +329,24 @@ fun AppNavHost(
                     exposicion = exposicion,
                     onVolver = { navController.popBackStack() },
                     onIrCarrito = { navController.navigate("carrito") }
+                )
+            }
+        }
+
+        composable("noticias") {
+            NoticiasScreen(
+                onNoticiaClick = { noticia ->
+                    noticiaSeleccionada.value = noticia
+                    navController.navigate("detalle_noticia")
+                }
+            )
+        }
+
+        composable("detalle_noticia") {
+            noticiaSeleccionada.value?.let { noticia ->
+                DetallesNoticiasScreen(
+                    noticia = noticia,
+                    onVolver = { navController.popBackStack() }
                 )
             }
         }

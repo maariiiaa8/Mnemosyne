@@ -31,12 +31,8 @@ import com.mnemosyne.app.ui.compra.CompraViewModel
 import com.mnemosyne.app.ui.exposiciones.DetalleExposicionScreen
 import com.mnemosyne.app.ui.exposiciones.ExposicionesScreen
 import com.mnemosyne.app.ui.home.HomeScreen
-import com.mnemosyne.app.ui.museos.MuseosScreen
-<<<<<<< HEAD
-import com.mnemosyne.app.ui.theme.MnemosyneTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mnemosyne.app.ui.museos.DetalleMuseoScreen
-=======
+import com.mnemosyne.app.ui.museos.MuseosScreen
 import com.mnemosyne.app.ui.perfil.EditarPerfilScreen
 import com.mnemosyne.app.ui.perfil.MisEntradasScreen
 import com.mnemosyne.app.ui.perfil.PerfilScreen
@@ -44,7 +40,6 @@ import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
 import com.stripe.android.PaymentConfiguration
 import kotlinx.coroutines.launch
->>>>>>> MNE-PASARELA_DE_PAGO
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +58,6 @@ class MainActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
 
-                // Rutas donde NO queremos mostrar el drawer
                 val rutasSinDrawer = listOf("splash", "login", "registro")
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val rutaActual = backStackEntry?.destination?.route ?: ""
@@ -141,21 +135,6 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(horizontal = 12.dp)
                                 )
 
-                                NavigationDrawerItem(
-                                    label = { Text("Noticias", letterSpacing = 2.sp, fontSize = 13.sp) },
-                                    selected = rutaActual == "noticias",
-                                    onClick = {
-                                        scope.launch { drawerState.close() }
-                                        navController.navigate("noticias")
-                                    },
-                                    colors = NavigationDrawerItemDefaults.colors(
-                                        selectedContainerColor = CremaOscura,
-                                        selectedTextColor = BurdeosOscuro,
-                                        unselectedTextColor = TextoOscuro
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 12.dp)
-                                )
-
                                 Spacer(modifier = Modifier.weight(1f))
 
                                 NavigationDrawerItem(
@@ -212,105 +191,6 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                                 )
                             }
-<<<<<<< HEAD
-                        )
-                    }
-
-                    composable("login") {
-                        LoginScreen(
-                            onLoginSuccess = {
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
-                                }
-                            },
-                            onIrARegistro = {
-                                navController.navigate("registro")
-                            }
-                        )
-                    }
-
-                    composable("registro") {
-                        RegistroScreen(
-                            onRegistroSuccess = {
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
-                                }
-                            },
-                            onIrALogin = {
-                                navController.popBackStack()
-                            }
-                        )
-                    }
-
-                    composable("home") {
-                        val authViewModel: AuthViewModel = viewModel()
-                        HomeScreen(
-                            onCerrarSesion = {
-                                authViewModel.cerrarSesion()
-                                navController.navigate("login") {
-                                    popUpTo("home") { inclusive = true }
-                                }
-                            },
-                            onIrAExposiciones = {
-                                navController.navigate("exposiciones")
-                            },
-                            onIrACarrito = {
-                                navController.navigate("carrito")
-                            },
-                            onIrANoticia = {
-                                navController.navigate("noticias")
-                            },
-                            onIrAMuseos = {
-                                navController.navigate("museos")
-                            },
-                            onIrATienda = {
-                                navController.navigate("tienda")
-                            }
-                        )
-                    }
-
-                    composable("museos") {
-                        MuseosScreen(
-                            onMuseoClick = { museo ->
-                                museoSeleccionado.value = museo
-                                navController.navigate("detalle_museo")
-                            }
-                        )
-                    }
-
-                    composable("detalle_museo") {
-                        museoSeleccionado.value?.let { museo ->
-                            DetalleMuseoScreen(
-                                museo = museo,
-                                onBack = { navController.popBackStack() }
-                            )
-                        }
-                    }
-
-
-                    composable("exposiciones") {
-                        ExposicionesScreen(
-                            onExposicionClick = { exposicion ->
-                                exposicionSeleccionada.value = exposicion
-                                navController.navigate("detalle_exposicion")
-                            }
-                        )
-                    }
-
-                    composable("detalle_exposicion") {
-                        exposicionSeleccionada.value?.let { exposicion ->
-                            DetalleExposicionScreen(
-                                exposicion = exposicion,
-                                onVolver = { navController.popBackStack() },
-                                onIrCarrito = { navController.navigate("carrito") }
-                            )
-                        }
-                    }
-
-                    composable("carrito") {
-                        CarritoScreen(
-                            onPagar = {}
-=======
                         }
                     ) {
                         AppNavHost(
@@ -319,7 +199,6 @@ class MainActivity : ComponentActivity() {
                             museoSeleccionado = museoSeleccionado,
                             authViewModel = authViewModel,
                             onAbrirMenu = { scope.launch { drawerState.open() } }
->>>>>>> MNE-PASARELA_DE_PAGO
                         )
                     }
                 } else {
@@ -405,7 +284,12 @@ fun AppNavHost(
         }
 
         composable("detalle_museo") {
-            museoSeleccionado.value?.let { }
+            museoSeleccionado.value?.let { museo ->
+                DetalleMuseoScreen(
+                    museo = museo,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
 
         composable("exposiciones") {

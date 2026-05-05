@@ -171,10 +171,14 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(horizontal = 12.dp)
                                 )
 
+                                Spacer(modifier = Modifier.height(8.dp))
+
                                 HorizontalDivider(
                                     color = DoradoSuave,
                                     modifier = Modifier.padding(horizontal = 16.dp)
                                 )
+
+                                Spacer(modifier = Modifier.height(8.dp))
 
                                 NavigationDrawerItem(
                                     label = { Text("Mi perfil", letterSpacing = 2.sp, fontSize = 13.sp) },

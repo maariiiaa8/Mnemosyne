@@ -219,12 +219,6 @@ private fun PerfilContenido(
                     onClick = onEditarPerfil
                 )
                 FilaAcceso(
-                    icono = Icons.Default.Lock,
-                    titulo = "Cambiar contraseña",
-                    subtitulo = "Actualiza tu contraseña",
-                    onClick = onCambiarPassword
-                )
-                FilaAcceso(
                     icono = Icons.Default.Logout,
                     titulo = "Cerrar sesión",
                     subtitulo = "",

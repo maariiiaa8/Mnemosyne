@@ -91,24 +91,6 @@ fun DetallesNoticiasScreen(
                 .navigationBarsPadding()
         ) {
             // Imagen
-            if (noticia.imagenUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = noticia.imagenUrl,
-                    contentDescription = noticia.titulo,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(240.dp)
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(240.dp)
-                        .background(DoradoSuave)
-                )
-            }
-
             Column(modifier = Modifier.padding(20.dp)) {
 
                 // Badge destacada

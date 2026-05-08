@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mnemosyne.app.data.model.ItemCarrito
+import com.mnemosyne.app.data.model.Stock
 import com.mnemosyne.app.data.repository.CarritoRepository
 import com.mnemosyne.app.utils.FirebaseResult
 import kotlinx.coroutines.launch

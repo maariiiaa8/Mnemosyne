@@ -139,8 +139,10 @@ private fun PerfilContenido(
                             Text(
                                 text = usuario.nombre
                                     .split(" ")
+                                    .filter { it.isNotBlank() }
                                     .take(2)
-                                    .joinToString("") { it.first().uppercase() },
+                                    .joinToString("") { it.first().uppercase() }
+                                    .ifEmpty { "?" },
                                 fontSize = 28.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Crema,

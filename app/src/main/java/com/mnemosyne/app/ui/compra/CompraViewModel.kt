@@ -7,6 +7,7 @@ import com.mnemosyne.app.data.model.ItemCarrito
 import com.mnemosyne.app.data.model.Pedido
 import com.mnemosyne.app.data.repository.CarritoRepository
 import com.mnemosyne.app.data.repository.PedidoRepository
+import com.mnemosyne.app.data.repository.StockRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,9 +21,10 @@ sealed class EstadoCompra {
 
 class CompraViewModel : ViewModel() {
 
-    private val functions = FirebaseFunctions.getInstance()
-    private val pedidoRepository = PedidoRepository()
+    private val functions         = FirebaseFunctions.getInstance()
+    private val pedidoRepository  = PedidoRepository()
     private val carritoRepository = CarritoRepository()
+    private val stockRepository   = StockRepository()
 
     private val _clientSecret = MutableStateFlow<String?>(null)
     val clientSecret: StateFlow<String?> = _clientSecret
@@ -60,11 +62,26 @@ class CompraViewModel : ViewModel() {
 
     fun guardarPedidoTrasCompra(total: Double) {
         viewModelScope.launch {
-            val pedido = Pedido(
-                items = itemsCarrito,
-                total = total
-            )
-            pedidoRepository.guardarPedido(pedido)
+            val itemsEntrada = itemsCarrito.filter { it.categoria != "merch" }
+            val itemsMerch   = itemsCarrito.filter { it.categoria == "merch" }
+
+            if (itemsEntrada.isNotEmpty()) {
+                val totalEntradas = itemsEntrada.sumOf { it.precio * it.cantidad }
+                pedidoRepository.guardarPedido(
+                    Pedido(items = itemsEntrada, total = totalEntradas)
+                )
+            }
+
+            if (itemsMerch.isNotEmpty()) {
+                val totalMerch = itemsMerch.sumOf { it.precio * it.cantidad }
+                pedidoRepository.guardarPedido(
+                    Pedido(items = itemsMerch, total = totalMerch)
+                )
+                itemsMerch.forEach { item ->
+                    stockRepository.decrementarStock(item.exposicionId, item.cantidad)
+                }
+            }
+
             carritoRepository.vaciarCarrito()
         }
     }

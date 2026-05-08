@@ -15,13 +15,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.mnemosyne.app.data.model.Exposicion
+import com.mnemosyne.app.data.model.ItemCarrito
 import com.mnemosyne.app.data.model.Museo
 import com.mnemosyne.app.data.model.Noticia
+import com.mnemosyne.app.data.model.Stock
 import com.mnemosyne.app.ui.auth.AuthViewModel
 import com.mnemosyne.app.ui.auth.LoginScreen
 import com.mnemosyne.app.ui.auth.RegistroScreen
@@ -40,6 +43,8 @@ import com.mnemosyne.app.ui.perfil.EditarPerfilScreen
 import com.mnemosyne.app.ui.perfil.MisEntradasScreen
 import com.mnemosyne.app.ui.perfil.PerfilScreen
 import com.mnemosyne.app.ui.theme.*
+import com.mnemosyne.app.ui.tienda.DetalleTiendaScreen
+import com.mnemosyne.app.ui.tienda.TiendaScreen
 import com.mnemosyne.app.utils.FirebaseResult
 import com.stripe.android.PaymentConfiguration
 import kotlinx.coroutines.launch
@@ -58,6 +63,7 @@ class MainActivity : ComponentActivity() {
                 val exposicionSeleccionada = remember { mutableStateOf<Exposicion?>(null) }
                 val museoSeleccionado = remember { mutableStateOf<Museo?>(null) }
                 val noticiaSeleccionada = remember { mutableStateOf<Noticia?>(null) }
+                val productoSeleccionado = remember { mutableStateOf<Stock?>(null) }
                 val authViewModel: AuthViewModel = viewModel()
                 val drawerState = rememberDrawerState(DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
@@ -125,6 +131,21 @@ class MainActivity : ComponentActivity() {
                                 )
 
                                 NavigationDrawerItem(
+                                    label = { Text("Tienda", letterSpacing = 2.sp, fontSize = 13.sp) },
+                                    selected = rutaActual == "tienda",
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate("tienda")
+                                    },
+                                    colors = NavigationDrawerItemDefaults.colors(
+                                        selectedContainerColor = CremaOscura,
+                                        selectedTextColor = BurdeosOscuro,
+                                        unselectedTextColor = TextoOscuro
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 12.dp)
+                                )
+
+                                NavigationDrawerItem(
                                     label = { Text("Museos", letterSpacing = 2.sp, fontSize = 13.sp) },
                                     selected = rutaActual == "museos",
                                     onClick = {
@@ -171,14 +192,10 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(horizontal = 12.dp)
                                 )
 
-                                Spacer(modifier = Modifier.height(8.dp))
-
                                 HorizontalDivider(
                                     color = DoradoSuave,
                                     modifier = Modifier.padding(horizontal = 16.dp)
                                 )
-
-                                Spacer(modifier = Modifier.height(8.dp))
 
                                 NavigationDrawerItem(
                                     label = { Text("Mi perfil", letterSpacing = 2.sp, fontSize = 13.sp) },
@@ -221,6 +238,7 @@ class MainActivity : ComponentActivity() {
                             exposicionSeleccionada = exposicionSeleccionada,
                             museoSeleccionado = museoSeleccionado,
                             noticiaSeleccionada = noticiaSeleccionada,
+                            productoSeleccionado = productoSeleccionado,
                             authViewModel = authViewModel,
                             onAbrirMenu = { scope.launch { drawerState.open() } }
                         )
@@ -231,6 +249,7 @@ class MainActivity : ComponentActivity() {
                         exposicionSeleccionada = exposicionSeleccionada,
                         museoSeleccionado = museoSeleccionado,
                         noticiaSeleccionada = noticiaSeleccionada,
+                        productoSeleccionado = productoSeleccionado,
                         authViewModel = authViewModel,
                         onAbrirMenu = {}
                     )
@@ -242,10 +261,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavHost(
-    navController: androidx.navigation.NavHostController,
-    exposicionSeleccionada: androidx.compose.runtime.MutableState<Exposicion?>,
-    museoSeleccionado: androidx.compose.runtime.MutableState<Museo?>,
-    noticiaSeleccionada: androidx.compose.runtime.MutableState<Noticia?>,
+    navController: NavHostController,
+    exposicionSeleccionada: MutableState<Exposicion?>,
+    museoSeleccionado: MutableState<Museo?>,
+    noticiaSeleccionada: MutableState<Noticia?>,
+    productoSeleccionado: MutableState<Stock?>,
     authViewModel: AuthViewModel,
     onAbrirMenu: () -> Unit
 ) {
@@ -292,11 +312,11 @@ fun AppNavHost(
                     }
                 },
                 onIrAExposiciones = { navController.navigate("exposiciones") },
-                onIrACarrito = { navController.navigate("carrito") },
-                onIrANoticia = { navController.navigate("noticias") },
-                onIrAMuseos = { navController.navigate("museos") },
-                onIrAPerfil = { navController.navigate("perfil") },
-                onAbrirMenu = onAbrirMenu
+                onIrACarrito      = { navController.navigate("carrito") },
+                onIrANoticia      = { navController.navigate("noticias") },
+                onIrAMuseos       = { navController.navigate("museos") },
+                onIrAPerfil       = { navController.navigate("perfil") },
+                onAbrirMenu       = onAbrirMenu
             )
         }
 
@@ -331,7 +351,7 @@ fun AppNavHost(
             exposicionSeleccionada.value?.let { exposicion ->
                 DetalleExposicionScreen(
                     exposicion = exposicion,
-                    onVolver = { navController.popBackStack() },
+                    onVolver   = { navController.popBackStack() },
                     onIrCarrito = { navController.navigate("carrito") }
                 )
             }
@@ -349,8 +369,42 @@ fun AppNavHost(
         composable("detalle_noticia") {
             noticiaSeleccionada.value?.let { noticia ->
                 DetallesNoticiasScreen(
-                    noticia = noticia,
+                    noticia  = noticia,
                     onVolver = { navController.popBackStack() }
+                )
+            }
+        }
+
+        composable("tienda") {
+            TiendaScreen(
+                onProductoClick = { producto ->
+                    productoSeleccionado.value = producto
+                    navController.navigate("detalle_tienda")
+                }
+            )
+        }
+
+        composable("detalle_tienda") {
+            productoSeleccionado.value?.let { producto ->
+                val carritoViewModel: CarritoViewModel = viewModel()
+                DetalleTiendaScreen(
+                    producto         = producto,
+                    onVolver         = { navController.popBackStack() },
+                    onIrCarrito      = { navController.navigate("carrito") },
+                    carritoViewModel = carritoViewModel,
+                    onAnadirAlCarrito = { stock ->
+                        carritoViewModel.añadirItem(
+                            ItemCarrito(
+                                exposicionId      = stock.id,
+                                exposicionTitulo  = stock.nombreProducto,
+                                museoNombre       = "",
+                                tipoEntradaNombre = "Producto tienda",
+                                precio            = stock.precio,
+                                cantidad          = 1,
+                                categoria         = "merch"
+                            )
+                        )
+                    }
                 )
             }
         }
@@ -363,11 +417,13 @@ fun AppNavHost(
             val total = carritoViewModel.calcularTotal(items)
 
             CarritoScreen(
-                onPagar = { compraViewModel.iniciarPago(total, items) },
-                compraViewModel = compraViewModel,
+                onPagar          = { compraViewModel.iniciarPago(total, items) },
+                compraViewModel  = compraViewModel,
                 onPagoCompletado = {
                     compraViewModel.guardarPedidoTrasCompra(total)
-                    navController.navigate("mis_entradas") {
+                    // Navegamos al perfil para que el usuario elija
+                    // entre "Mis Entradas" o "Mis Compras"
+                    navController.navigate("perfil") {
                         popUpTo("carrito") { inclusive = true }
                     }
                 },
@@ -377,12 +433,12 @@ fun AppNavHost(
 
         composable("perfil") {
             PerfilScreen(
-                onEditarPerfil = { navController.navigate("editar_perfil") },
-                onMisEntradas = { navController.navigate("mis_entradas") },
-                onMisCompras = { },
-                onMisFavoritos = { },
+                onEditarPerfil    = { navController.navigate("editar_perfil") },
+                onMisEntradas     = { navController.navigate("mis_entradas") },
+                onMisCompras      = { navController.navigate("mis_compras") },
+                onMisFavoritos    = { },
                 onCambiarPassword = { },
-                onCerrarSesion = {
+                onCerrarSesion    = {
                     authViewModel.cerrarSesion()
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
@@ -393,8 +449,17 @@ fun AppNavHost(
 
         composable("mis_entradas") {
             MisEntradasScreen(
-                onVolver = { navController.popBackStack() },
-                onIrAExposiciones = { navController.navigate("exposiciones") }
+                onVolver          = { navController.popBackStack() },
+                onIrAExposiciones = { navController.navigate("exposiciones") },
+                soloMerch         = false
+            )
+        }
+
+        composable("mis_compras") {
+            MisEntradasScreen(
+                onVolver          = { navController.popBackStack() },
+                onIrAExposiciones = { navController.navigate("tienda") },
+                soloMerch         = true
             )
         }
 

@@ -11,12 +11,10 @@ class CarritoRepository {
     private val db   = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // Referencia a los items del carrito del usuario actual
     private fun itemsRef() = db.collection("carritos")
         .document(auth.currentUser!!.uid)
         .collection("items")
 
-    // Obtiene todos los items del carrito
     suspend fun obtenerItems(): FirebaseResult<List<ItemCarrito>> {
         return try {
             val snapshot = itemsRef().get().await()
@@ -28,7 +26,8 @@ class CarritoRepository {
                     museoNombre       = doc.getString("museoNombre") ?: "",
                     tipoEntradaNombre = doc.getString("tipoEntradaNombre") ?: "",
                     precio            = doc.getDouble("precio") ?: 0.0,
-                    cantidad          = doc.getLong("cantidad")?.toInt() ?: 1
+                    cantidad          = doc.getLong("cantidad")?.toInt() ?: 1,
+                    categoria         = doc.getString("categoria") ?: "entrada"
                 )
             }
             FirebaseResult.Success(items)
@@ -37,7 +36,6 @@ class CarritoRepository {
         }
     }
 
-    // Añade un item al carrito
     suspend fun añadirItem(item: ItemCarrito): FirebaseResult<Unit> {
         return try {
             val data = mapOf(
@@ -46,7 +44,8 @@ class CarritoRepository {
                 "museoNombre"       to item.museoNombre,
                 "tipoEntradaNombre" to item.tipoEntradaNombre,
                 "precio"            to item.precio,
-                "cantidad"          to item.cantidad
+                "cantidad"          to item.cantidad,
+                "categoria"         to item.categoria
             )
             itemsRef().add(data).await()
             FirebaseResult.Success(Unit)
@@ -55,7 +54,6 @@ class CarritoRepository {
         }
     }
 
-    // Elimina un item del carrito
     suspend fun eliminarItem(itemId: String): FirebaseResult<Unit> {
         return try {
             itemsRef().document(itemId).delete().await()
@@ -65,7 +63,6 @@ class CarritoRepository {
         }
     }
 
-    // Actualiza la cantidad de un item
     suspend fun actualizarCantidad(itemId: String, cantidad: Int): FirebaseResult<Unit> {
         return try {
             itemsRef().document(itemId).update("cantidad", cantidad).await()
@@ -75,7 +72,6 @@ class CarritoRepository {
         }
     }
 
-    // Vacía el carrito completo
     suspend fun vaciarCarrito(): FirebaseResult<Unit> {
         return try {
             val items = itemsRef().get().await()

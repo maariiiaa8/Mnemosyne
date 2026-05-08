@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -44,7 +43,6 @@ fun DetalleExposicionScreen(
         }
     }
 
-    // ── Bottom Sheet de entradas ──────────────────────────
     if (mostrarEntradas) {
         ModalBottomSheet(
             onDismissRequest = { mostrarEntradas = false },

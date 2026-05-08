@@ -28,11 +28,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.mnemosyne.app.data.model.Noticia
 import com.mnemosyne.app.ui.theme.BurdeosOscuro
 import com.mnemosyne.app.ui.theme.Burdeos

@@ -26,36 +26,32 @@ class PerfilViewModel : ViewModel() {
     fun cargarPerfil() {
         _perfil.value = FirebaseResult.Loading
         viewModelScope.launch {
-            _perfil.value = repository.obtenerPerfil()
+            _perfil.postValue(repository.obtenerPerfil())
         }
     }
 
-    fun actualizarNombre(nuevoNombre: String) {
-        if (nuevoNombre.isBlank()) {
-            _actualizacion.value = FirebaseResult.Error("El nombre no puede estar vacío")
-            return
-        }
+    fun guardarCambios(nuevoNombre: String) {
         viewModelScope.launch {
-            _actualizacion.value = repository.actualizarNombre(nuevoNombre)
-            if (_actualizacion.value is FirebaseResult.Success) cargarPerfil()
-        }
-    }
-
-    fun guardarCambios(nuevoNombre: String, fotoUri: android.net.Uri?) {
-        viewModelScope.launch {
-            if (fotoUri != null) {
-                val resultado = repository.subirFotoPerfil(fotoUri)
-                _actualizacion.value = when (resultado) {
-                    is FirebaseResult.Success -> FirebaseResult.Success(Unit)
-                    is FirebaseResult.Error   -> FirebaseResult.Error(resultado.mensaje)
-                    is FirebaseResult.Loading -> FirebaseResult.Loading
-                }
-            }
             val nombreActual = (perfil.value as? FirebaseResult.Success)?.data?.nombre
-            if (nuevoNombre.isNotBlank() && nuevoNombre != nombreActual) {
-                _actualizacion.value = repository.actualizarNombre(nuevoNombre)
+
+            if (nuevoNombre.isBlank()) {
+                _actualizacion.postValue(FirebaseResult.Error("El nombre no puede estar vacío"))
+                return@launch
             }
+
+            if (nuevoNombre == nombreActual) {
+                _actualizacion.postValue(FirebaseResult.Success(Unit))
+                return@launch
+            }
+
+            val resultado = repository.actualizarNombre(nuevoNombre)
+            if (resultado is FirebaseResult.Error) {
+                _actualizacion.postValue(FirebaseResult.Error(resultado.mensaje))
+                return@launch
+            }
+
             cargarPerfil()
+            _actualizacion.postValue(FirebaseResult.Success(Unit))
         }
     }
 }

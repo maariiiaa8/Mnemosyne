@@ -78,15 +78,15 @@ class CompraViewModel : ViewModel() {
                     Pedido(items = itemsMerch, total = totalMerch)
                 )
                 itemsMerch.forEach { item ->
-                    stockRepository.decrementarStock(item.exposicionId, item.cantidad)
+                    stockRepository.decrementarStock(item.museoId, item.exposicionId, item.cantidad)
                 }
-            }
-
             carritoRepository.vaciarCarrito()
         }
     }
 
     fun onError(mensaje: String) {
         _estado.value = EstadoCompra.Error(mensaje)
+    }
+
     }
 }

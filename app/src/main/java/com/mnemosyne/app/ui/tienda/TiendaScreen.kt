@@ -2,10 +2,12 @@ package com.mnemosyne.app.ui.tienda
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +31,8 @@ fun TiendaScreen(
     viewModel: StockViewModel = viewModel()
 ) {
     val productosState by viewModel.productos.observeAsState()
+    val museos by viewModel.museos.observeAsState(emptyMap())
+    var museoSeleccionado by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -53,6 +57,70 @@ fun TiendaScreen(
             )
         }
 
+        // ── Filtro por museo ──────────────────────────────
+        if (museos.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Chip "Todos"
+                FilterChip(
+                    selected = museoSeleccionado == null,
+                    onClick = {
+                        museoSeleccionado = null
+                        viewModel.cargarProductos(null)
+                    },
+                    label = {
+                        Text(
+                            text = "Todos",
+                            fontSize = 11.sp,
+                            letterSpacing = 1.sp
+                        )
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Burdeos,
+                        selectedLabelColor = Crema,
+                        containerColor = Crema,
+                        labelColor = BurdeosOscuro
+                    ),
+                    shape = RoundedCornerShape(2.dp)
+                )
+
+                // Chip por cada museo
+                museos.forEach { (id, nombre) ->
+                    FilterChip(
+                        selected = museoSeleccionado == id,
+                        onClick = {
+                            museoSeleccionado = id
+                            viewModel.cargarProductos(id)
+                        },
+                        label = {
+                            Text(
+                                text = nombre,
+                                fontSize = 11.sp,
+                                letterSpacing = 1.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Burdeos,
+                            selectedLabelColor = Crema,
+                            containerColor = Crema,
+                            labelColor = BurdeosOscuro
+                        ),
+                        shape = RoundedCornerShape(2.dp)
+                    )
+                }
+            }
+
+            HorizontalDivider(color = DoradoSuave)
+        }
+
+        // ── Contenido ─────────────────────────────────────
         when (val state = productosState) {
             is FirebaseResult.Loading -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -93,7 +161,7 @@ fun TiendaScreen(
                         Text(state.mensaje, color = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
-                            onClick = { viewModel.cargarProductos() },
+                            onClick = { viewModel.cargarProductos(museoSeleccionado) },
                             colors = ButtonDefaults.buttonColors(containerColor = Burdeos)
                         ) {
                             Text("Reintentar", color = Crema)

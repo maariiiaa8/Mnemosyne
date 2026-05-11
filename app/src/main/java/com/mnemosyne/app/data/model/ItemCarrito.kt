@@ -4,6 +4,7 @@ data class ItemCarrito(
     val id: String = "",
     val exposicionId: String = "",
     val exposicionTitulo: String = "",
+    val museoId: String = "",
     val museoNombre: String = "",
     val tipoEntradaNombre: String = "",
     val precio: Double = 0.0,

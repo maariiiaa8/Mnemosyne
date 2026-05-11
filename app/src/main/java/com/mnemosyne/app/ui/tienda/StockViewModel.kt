@@ -16,14 +16,35 @@ class StockViewModel : ViewModel() {
     private val _productos = MutableLiveData<FirebaseResult<List<Stock>>>()
     val productos: LiveData<FirebaseResult<List<Stock>>> = _productos
 
+    // museosId -> nombre legible
+    private val _museos = MutableLiveData<Map<String, String>>()
+    val museos: LiveData<Map<String, String>> = _museos
+
+    private var museoSeleccionado: String? = null
+
     init {
+        cargarMuseos()
         cargarProductos()
     }
 
-    fun cargarProductos() {
+    fun cargarMuseos() {
+        viewModelScope.launch {
+            val resultado = repository.obtenerMuseos()
+            if (resultado is FirebaseResult.Success) {
+                _museos.value = resultado.data
+            }
+        }
+    }
+
+    fun cargarProductos(museoId: String? = null) {
+        museoSeleccionado = museoId
         viewModelScope.launch {
             _productos.value = FirebaseResult.Loading
-            _productos.value = repository.obtenerProductos()
+            _productos.value = if (museoId != null) {
+                repository.obtenerProductosPorMuseo(museoId)
+            } else {
+                repository.obtenerTodosLosProductos()
+            }
         }
     }
 }

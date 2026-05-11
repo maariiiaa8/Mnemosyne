@@ -24,8 +24,9 @@ import com.mnemosyne.app.data.model.ItemCarrito
 import com.mnemosyne.app.ui.compra.CompraViewModel
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
-import com.stripe.android.paymentsheet.PaymentSheetContract
 import com.stripe.android.paymentsheet.PaymentSheetResult
+import com.stripe.android.paymentsheet.rememberPaymentSheet
+
 
 @Composable
 fun CarritoScreen(
@@ -37,21 +38,17 @@ fun CarritoScreen(
     val itemsState by viewModel.items.observeAsState()
     val clientSecret by compraViewModel.clientSecret.collectAsState()
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = PaymentSheetContract()
-    ) { result ->
+    val paymentSheet = rememberPaymentSheet { result ->
         when (result) {
             is PaymentSheetResult.Completed -> onPagoCompletado()
-            is PaymentSheetResult.Failed -> compraViewModel.onError(result.error.message ?: "Error")
+            is PaymentSheetResult.Failed -> {}
             is PaymentSheetResult.Canceled -> {}
         }
     }
 
     LaunchedEffect(clientSecret) {
         clientSecret?.let { secret ->
-            launcher.launch(
-                PaymentSheetContract.Args.createPaymentIntentArgs(secret)
-            )
+            paymentSheet.presentWithPaymentIntent(secret)
         }
     }
 

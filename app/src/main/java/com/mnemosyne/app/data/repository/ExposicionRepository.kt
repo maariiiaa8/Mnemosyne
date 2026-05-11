@@ -27,40 +27,63 @@ class ExposicionRepository {
                     .await()
 
                 for (doc in expos.documents) {
-                    // Leemos tiposEntrada como array embebido en el documento
-                    @Suppress("UNCHECKED_CAST")
-                    val tiposRaw = doc.get("tiposEntrada") as? List<Map<String, Any>> ?: emptyList()
-
-                    val tiposEntrada = tiposRaw.map { t ->
-                        TipoEntrada(
-                            id          = t["id"] as? String ?: "",
-                            nombre      = t["nombre"] as? String ?: "",
-                            descripcion = t["descripcion"] as? String ?: "",
-                            precio      = (t["precio"] as? Number)?.toDouble() ?: 0.0
-                        )
-                    }
-
-                    exposiciones.add(
-                        Exposicion(
-                            id           = doc.id,
-                            titulo       = doc.getString("titulo") ?: "",
-                            descripcion  = doc.getString("descripcion") ?: "",
-                            fechaInicio  = parsearFecha(doc, "fechaInicio"),
-                            fechaFin     = parsearFecha(doc, "fechaFin"),
-                            imagenUrl    = doc.getString("imagenUrl") ?: "",
-                            destacada    = doc.getBoolean("destacada") ?: false,
-                            esPublica    = doc.getBoolean("esPublica") ?: true,
-                            museoNombre  = doc.getString("museoNombre") ?: "",
-                            museoId      = museo.id,
-                            tiposEntrada = tiposEntrada
-                        )
-                    )
+                    exposiciones.add(mapearExposicion(doc, museo.id))
                 }
             }
             FirebaseResult.Success(exposiciones)
         } catch (e: Exception) {
             FirebaseResult.Error(e.message ?: "Error al cargar exposiciones")
         }
+    }
+
+    // Obtiene solo las exposiciones de un museo concreto
+    suspend fun obtenerExposicionesDeMuseo(museoId: String): FirebaseResult<List<Exposicion>> {
+        return try {
+            val snapshot = db.collection("museos")
+                .document(museoId)
+                .collection("exposiciones")
+                .get()
+                .await()
+
+            val exposiciones = snapshot.documents.map { doc ->
+                mapearExposicion(doc, museoId)
+            }
+            FirebaseResult.Success(exposiciones)
+        } catch (e: Exception) {
+            FirebaseResult.Error(e.message ?: "Error al cargar exposiciones del museo")
+        }
+    }
+
+    // Mapeo común para no duplicar lógica
+    private fun mapearExposicion(
+        doc: com.google.firebase.firestore.DocumentSnapshot,
+        museoId: String
+    ): Exposicion {
+        @Suppress("UNCHECKED_CAST")
+        val tiposRaw = doc.get("tiposEntrada") as? List<Map<String, Any>> ?: emptyList()
+
+        val tiposEntrada = tiposRaw.map { t ->
+            TipoEntrada(
+                id          = t["id"] as? String ?: "",
+                nombre      = t["nombre"] as? String ?: "",
+                descripcion = t["descripcion"] as? String ?: "",
+                precio      = (t["precio"] as? Number)?.toDouble() ?: 0.0
+            )
+        }
+
+        return Exposicion(
+            id           = doc.id,
+            titulo       = doc.getString("titulo") ?: "",
+            descripcion  = doc.getString("descripcion") ?: "",
+            fechaInicio  = parsearFecha(doc, "fechaInicio"),
+            fechaFin     = parsearFecha(doc, "fechaFin"),
+            imagenUrl    = doc.getString("imagenUrl") ?: "",
+            destacada    = doc.getBoolean("destacada") ?: false,
+            esPublica    = doc.getBoolean("esPublica") ?: true,
+            museoNombre  = doc.getString("museoNombre") ?: "",
+            museoId      = museoId,
+            tiposEntrada = tiposEntrada
+        )
     }
 
     private fun parsearFecha(

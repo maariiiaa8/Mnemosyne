@@ -31,7 +31,6 @@ fun PerfilScreen(
     onEditarPerfil: () -> Unit,
     onMisEntradas: () -> Unit,
     onMisCompras: () -> Unit,
-    onMisFavoritos: () -> Unit,
     onCambiarPassword: () -> Unit,
     onCerrarSesion: () -> Unit,
     viewModel: PerfilViewModel = viewModel()
@@ -72,7 +71,6 @@ fun PerfilScreen(
                     onEditarPerfil = onEditarPerfil,
                     onMisEntradas = onMisEntradas,
                     onMisCompras = onMisCompras,
-                    onMisFavoritos = onMisFavoritos,
                     onCambiarPassword = onCambiarPassword,
                     onCerrarSesion = onCerrarSesion
                 )
@@ -93,7 +91,6 @@ private fun PerfilContenido(
     onEditarPerfil: () -> Unit,
     onMisEntradas: () -> Unit,
     onMisCompras: () -> Unit,
-    onMisFavoritos: () -> Unit,
     onCambiarPassword: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
@@ -191,20 +188,14 @@ private fun PerfilContenido(
                 FilaAcceso(
                     icono = Icons.Default.ConfirmationNumber,
                     titulo = "Mis entradas",
-                    subtitulo = "Exposiciones y visitas compradas",
+                    subtitulo = "Historial de exposiciones y visitas.",
                     onClick = onMisEntradas
                 )
                 FilaAcceso(
                     icono = Icons.Default.ShoppingBag,
                     titulo = "Mis compras",
-                    subtitulo = "Artículos de la tienda",
+                    subtitulo = "Artículos adquiridos en la tienda.",
                     onClick = onMisCompras
-                )
-                FilaAcceso(
-                    icono = Icons.Default.Favorite,
-                    titulo = "Mis favoritos",
-                    subtitulo = "Exposiciones guardadas",
-                    onClick = onMisFavoritos
                 )
             }
         }
@@ -217,7 +208,7 @@ private fun PerfilContenido(
                 FilaAcceso(
                     icono = Icons.Default.Edit,
                     titulo = "Editar perfil",
-                    subtitulo = "Cambia tu nombre y foto",
+                    subtitulo = "Actualiza tu información personal.",
                     onClick = onEditarPerfil
                 )
                 FilaAcceso(

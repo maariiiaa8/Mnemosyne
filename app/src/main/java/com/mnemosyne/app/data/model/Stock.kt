@@ -5,5 +5,6 @@ data class Stock(
     val nombreProducto: String = "",
     val precio: Double = 0.0,
     val cantidad: Int = 0,
-    val imagenUrl: String = ""
+    val imagenUrl: String = "",
+    val museoId: String = ""
 )

@@ -3,18 +3,10 @@ package com.mnemosyne.app.ui.museos
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,41 +14,42 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.mnemosyne.app.data.model.Exposicion
 import com.mnemosyne.app.data.model.Museo
-import com.mnemosyne.app.ui.theme.BurdeosOscuro
-import com.mnemosyne.app.ui.theme.Burdeos
-import com.mnemosyne.app.ui.theme.CinzelFamily
-import com.mnemosyne.app.ui.theme.Crema
-import com.mnemosyne.app.ui.theme.Dorado
-import com.mnemosyne.app.ui.theme.DoradoSuave
-import com.mnemosyne.app.ui.theme.Superficie
-import com.mnemosyne.app.ui.theme.TextoSuave
-import java.util.Locale
-import java.util.Locale.getDefault
+import com.mnemosyne.app.data.model.Obra
+import com.mnemosyne.app.ui.theme.*
+import com.mnemosyne.app.utils.FirebaseResult
 
 @Composable
 fun DetalleMuseoScreen(
     museo: Museo,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onExposicionClick: (Exposicion) -> Unit,
+    viewModel: DetalleMuseoViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+
+    val obrasState by viewModel.obras.observeAsState()
+    val exposicionesState by viewModel.exposiciones.observeAsState()
+
+    // Cargamos los datos la primera vez que entra a la pantalla
+    LaunchedEffect(museo.id) {
+        viewModel.cargarDatos(museo.id)
+    }
 
     Column(
         modifier = Modifier
@@ -91,14 +84,14 @@ fun DetalleMuseoScreen(
             )
         }
 
-        // ── Contenido scrollable (un solo verticalScroll) ─
+        // ── Contenido scrollable ──────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
                 .navigationBarsPadding()
         ) {
-            // Imagen
+            // Imagen principal del museo
             if (museo.imagenUrl.isNotEmpty()) {
                 AsyncImage(
                     model = museo.imagenUrl,
@@ -119,25 +112,7 @@ fun DetalleMuseoScreen(
 
             Column(modifier = Modifier.padding(20.dp)) {
 
-//                // Badge destacado
-//                if (museo.destacado) {
-//                    Surface(
-//                        shape = RoundedCornerShape(2.dp),
-//                        color = Burdeos.copy(alpha = 0.1f)
-//                    ) {
-//                        Text(
-//                            text = "DESTACADO",
-//                            fontSize = 9.sp,
-//                            letterSpacing = 1.sp,
-//                            color = Burdeos,
-//                            fontWeight = FontWeight.Bold,
-//                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-//                        )
-//                    }
-//                    Spacer(modifier = Modifier.height(12.dp))
-//                }
-
-                // Nombre
+                // Nombre del museo
                 Text(
                     text = museo.nombre,
                     fontSize = 24.sp,
@@ -189,9 +164,56 @@ fun DetalleMuseoScreen(
                     )
                     Spacer(modifier = Modifier.height(28.dp))
                 }
+            }
 
-                // Botón web
-                if (museo.web.isNotEmpty()) {
+            // ── Carrusel de obras ─────────────────────────
+            when (val state = obrasState) {
+                is FirebaseResult.Success -> {
+                    if (state.data.isNotEmpty()) {
+                        SeccionCarruselObras(obras = state.data)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+                is FirebaseResult.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Burdeos, modifier = Modifier.size(24.dp))
+                    }
+                }
+                else -> {}
+            }
+
+            // ── Exposiciones del museo ────────────────────
+            when (val state = exposicionesState) {
+                is FirebaseResult.Success -> {
+                    if (state.data.isNotEmpty()) {
+                        SeccionExposicionesMuseo(
+                            exposiciones = state.data,
+                            onExposicionClick = onExposicionClick
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+                is FirebaseResult.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Burdeos, modifier = Modifier.size(24.dp))
+                    }
+                }
+                else -> {}
+            }
+
+            // ── Botón web oficial ─────────────────────────
+            if (museo.web.isNotEmpty()) {
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     HorizontalDivider(color = DoradoSuave)
                     Spacer(modifier = Modifier.height(20.dp))
                     Button(
@@ -220,7 +242,200 @@ fun DetalleMuseoScreen(
                             color = Crema
                         )
                     }
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
+            }
+        }
+    }
+}
+
+// ── Sección carrusel de obras ─────────────────────────────
+@Composable
+fun SeccionCarruselObras(obras: List<Obra>) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "OBRAS DESTACADAS",
+                fontSize = 10.sp,
+                letterSpacing = 2.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextoSuave
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(obras) { obra ->
+                TarjetaObra(obra = obra)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider(
+            color = DoradoSuave,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+    }
+}
+
+@Composable
+fun TarjetaObra(obra: Obra) {
+    Card(
+        modifier = Modifier.width(160.dp),
+        shape = RoundedCornerShape(2.dp),
+        colors = CardDefaults.cardColors(containerColor = Crema),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Column {
+            // Imagen de la obra
+            if (obra.imagenUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = obra.imagenUrl,
+                    contentDescription = obra.nombre,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .background(DoradoSuave),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "—",
+                        color = Dorado,
+                        fontSize = 20.sp,
+                        fontFamily = CinzelFamily
+                    )
+                }
+            }
+
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text(
+                    text = obra.nombre,
+                    fontSize = 13.sp,
+                    fontFamily = CinzelFamily,
+                    fontWeight = FontWeight.Medium,
+                    color = BurdeosOscuro,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 17.sp
+                )
+                if (obra.autor.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = obra.autor,
+                        fontSize = 11.sp,
+                        color = TextoSuave,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                if (obra.siglo.isNotEmpty()) {
+                    Text(
+                        text = obra.siglo,
+                        fontSize = 10.sp,
+                        color = Dorado,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ── Sección exposiciones del museo ────────────────────────
+@Composable
+fun SeccionExposicionesMuseo(
+    exposiciones: List<Exposicion>,
+    onExposicionClick: (Exposicion) -> Unit
+) {
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "EXPOSICIONES",
+            fontSize = 10.sp,
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextoSuave
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        exposiciones.forEach { exposicion ->
+            TarjetaExposicionMuseo(
+                exposicion = exposicion,
+                onClick = { onExposicionClick(exposicion) }
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+}
+
+@Composable
+fun TarjetaExposicionMuseo(exposicion: Exposicion, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(2.dp),
+        colors = CardDefaults.cardColors(containerColor = Crema),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = exposicion.titulo,
+                    fontSize = 15.sp,
+                    fontFamily = CinzelFamily,
+                    fontWeight = FontWeight.Medium,
+                    color = BurdeosOscuro,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${exposicion.fechaInicio}  —  ${exposicion.fechaFin}",
+                    fontSize = 11.sp,
+                    color = TextoSuave,
+                    letterSpacing = 0.5.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Surface(
+                shape = RoundedCornerShape(2.dp),
+                color = if (exposicion.esPublica) Dorado.copy(alpha = 0.2f)
+                else Burdeos.copy(alpha = 0.1f)
+            ) {
+                Text(
+                    text = if (exposicion.esPublica) "LIBRE" else "PAGO",
+                    fontSize = 9.sp,
+                    letterSpacing = 1.sp,
+                    color = if (exposicion.esPublica) TextoOscuro else Burdeos,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
             }
         }
     }

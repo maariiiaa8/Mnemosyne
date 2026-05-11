@@ -333,7 +333,11 @@ fun AppNavHost(
             museoSeleccionado.value?.let { museo ->
                 DetalleMuseoScreen(
                     museo = museo,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onExposicionClick = { exposicion ->
+                        exposicionSeleccionada.value = exposicion
+                        navController.navigate("detalle_exposicion")
+                    }
                 )
             }
         }
@@ -397,6 +401,7 @@ fun AppNavHost(
                             ItemCarrito(
                                 exposicionId      = stock.id,
                                 exposicionTitulo  = stock.nombreProducto,
+                                museoId           = stock.museoId,   // ← añade esto
                                 museoNombre       = "",
                                 tipoEntradaNombre = "Producto tienda",
                                 precio            = stock.precio,
@@ -436,7 +441,6 @@ fun AppNavHost(
                 onEditarPerfil    = { navController.navigate("editar_perfil") },
                 onMisEntradas     = { navController.navigate("mis_entradas") },
                 onMisCompras      = { navController.navigate("mis_compras") },
-                onMisFavoritos    = { },
                 onCambiarPassword = { },
                 onCerrarSesion    = {
                     authViewModel.cerrarSesion()

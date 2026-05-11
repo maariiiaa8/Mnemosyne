@@ -5,6 +5,6 @@ data class Usuario(
     val nombre: String = "",
     val email: String = "",
     val fotoPerfil: String = "",
-    val favoritos: List<String> = emptyList(),
+    val favoritos: List<String>,
     val fechaRegistro: String = ""
 )

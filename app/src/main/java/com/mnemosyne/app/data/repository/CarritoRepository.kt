@@ -23,7 +23,9 @@ class CarritoRepository {
                     id                = doc.id,
                     exposicionId      = doc.getString("exposicionId") ?: "",
                     exposicionTitulo  = doc.getString("exposicionTitulo") ?: "",
+                    museoId           = doc.getString("museoId") ?: "",       // ← añadido
                     museoNombre       = doc.getString("museoNombre") ?: "",
+                    productoId        = doc.getString("productoId") ?: "",    // ← añadido
                     tipoEntradaNombre = doc.getString("tipoEntradaNombre") ?: "",
                     precio            = doc.getDouble("precio") ?: 0.0,
                     cantidad          = doc.getLong("cantidad")?.toInt() ?: 1,
@@ -41,7 +43,9 @@ class CarritoRepository {
             val data = mapOf(
                 "exposicionId"      to item.exposicionId,
                 "exposicionTitulo"  to item.exposicionTitulo,
+                "museoId"           to item.museoId,           // ← añadido
                 "museoNombre"       to item.museoNombre,
+                "productoId"        to item.productoId,        // ← añadido
                 "tipoEntradaNombre" to item.tipoEntradaNombre,
                 "precio"            to item.precio,
                 "cantidad"          to item.cantidad,
@@ -75,7 +79,9 @@ class CarritoRepository {
     suspend fun vaciarCarrito(): FirebaseResult<Unit> {
         return try {
             val items = itemsRef().get().await()
-            items.documents.forEach { it.reference.delete().await() }
+            val batch = db.batch()
+            items.documents.forEach { batch.delete(it.reference) }
+            batch.commit().await()
             FirebaseResult.Success(Unit)
         } catch (e: Exception) {
             FirebaseResult.Error(e.message ?: "Error al vaciar el carrito")

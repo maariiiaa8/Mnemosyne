@@ -49,6 +49,7 @@ import com.mnemosyne.app.ui.perfil.MisEntradasScreen
 import com.mnemosyne.app.ui.perfil.PerfilScreen
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.ui.tienda.DetalleTiendaScreen
+import com.mnemosyne.app.ui.tienda.StockViewModel
 import com.mnemosyne.app.ui.tienda.TiendaScreen
 import com.mnemosyne.app.utils.FirebaseResult
 import com.stripe.android.PaymentConfiguration
@@ -406,7 +407,8 @@ fun AppNavHost(
                             ItemCarrito(
                                 exposicionId      = stock.id,
                                 exposicionTitulo  = stock.nombreProducto,
-                                museoId           = stock.museoId,   // ← añade esto
+                                museoId           = stock.museoId,
+                                productoId        = stock.id,
                                 museoNombre       = "",
                                 tipoEntradaNombre = "Producto tienda",
                                 precio            = stock.precio,
@@ -422,17 +424,18 @@ fun AppNavHost(
         composable("carrito") {
             val carritoViewModel: CarritoViewModel = viewModel()
             val compraViewModel: CompraViewModel = viewModel()
+            val stockViewModel: StockViewModel = viewModel()
             val itemsState by carritoViewModel.items.observeAsState()
             val items = (itemsState as? FirebaseResult.Success)?.data ?: emptyList()
             val total = carritoViewModel.calcularTotal(items)
 
             CarritoScreen(
-                onPagar          = { compraViewModel.iniciarPago(total, items) },
-                compraViewModel  = compraViewModel,
+                onPagar         = { compraViewModel.iniciarPago(total, items) },
+                compraViewModel = compraViewModel,
+                stockViewModel  = stockViewModel,
                 onPagoCompletado = {
+                    stockViewModel.reducirStockTrasCompra(items)
                     compraViewModel.guardarPedidoTrasCompra(total)
-                    // Navegamos al perfil para que el usuario elija
-                    // entre "Mis Entradas" o "Mis Compras"
                     navController.navigate("perfil") {
                         popUpTo("carrito") { inclusive = true }
                     }

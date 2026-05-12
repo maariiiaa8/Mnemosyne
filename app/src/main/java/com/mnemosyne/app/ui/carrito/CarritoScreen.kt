@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mnemosyne.app.data.model.ItemCarrito
 import com.mnemosyne.app.ui.compra.CompraViewModel
 import com.mnemosyne.app.ui.theme.*
+import com.mnemosyne.app.ui.tienda.StockViewModel
 import com.mnemosyne.app.utils.FirebaseResult
 import com.stripe.android.paymentsheet.PaymentSheetResult
 import com.stripe.android.paymentsheet.rememberPaymentSheet
@@ -33,19 +34,23 @@ fun CarritoScreen(
     onPagar: () -> Unit,
     onPagoCompletado: () -> Unit,
     viewModel: CarritoViewModel = viewModel(),
-    compraViewModel: CompraViewModel = viewModel()
+    compraViewModel: CompraViewModel = viewModel(),
+    stockViewModel: StockViewModel = viewModel()   // ← añadir
 ) {
     val itemsState by viewModel.items.observeAsState()
     val clientSecret by compraViewModel.clientSecret.collectAsState()
-
     val paymentSheet = rememberPaymentSheet { result ->
         when (result) {
-            is PaymentSheetResult.Completed -> onPagoCompletado()
+            is PaymentSheetResult.Completed -> {
+                val items = (itemsState as? FirebaseResult.Success)?.data ?: emptyList()
+                stockViewModel.reducirStockTrasCompra(items)  // ← reducir stock
+                viewModel.vaciarCarrito()                      // ← vaciar carrito
+                onPagoCompletado()
+            }
             is PaymentSheetResult.Failed -> {}
             is PaymentSheetResult.Canceled -> {}
         }
     }
-
     LaunchedEffect(clientSecret) {
         clientSecret?.let { secret ->
             paymentSheet.presentWithPaymentIntent(secret)

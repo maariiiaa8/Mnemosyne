@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mnemosyne.app.data.model.ItemCarrito
 import com.mnemosyne.app.data.model.Stock
 import com.mnemosyne.app.data.repository.StockRepository
 import com.mnemosyne.app.utils.FirebaseResult
@@ -45,6 +46,17 @@ class StockViewModel : ViewModel() {
             } else {
                 repository.obtenerTodosLosProductos()
             }
+        }
+    }
+
+    fun reducirStockTrasCompra(items: List<ItemCarrito>) {
+        viewModelScope.launch {
+            items
+                .filter { it.categoria == "tienda" }
+                .forEach { item ->
+                    repository.decrementarStock(item.museoId, item.productoId, item.cantidad)
+                }
+            cargarProductos()
         }
     }
 }

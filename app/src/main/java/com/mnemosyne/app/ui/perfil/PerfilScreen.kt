@@ -33,6 +33,7 @@ fun PerfilScreen(
     onMisCompras: () -> Unit,
     onCambiarPassword: () -> Unit,
     onCerrarSesion: () -> Unit,
+    onPanelAdmin: () -> Unit,
     viewModel: PerfilViewModel = viewModel()
 ) {
     val perfilState by viewModel.perfil.observeAsState()
@@ -72,7 +73,9 @@ fun PerfilScreen(
                     onMisEntradas = onMisEntradas,
                     onMisCompras = onMisCompras,
                     onCambiarPassword = onCambiarPassword,
-                    onCerrarSesion = onCerrarSesion
+                    onCerrarSesion = onCerrarSesion,
+                    onPanelAdmin = onPanelAdmin
+
                 )
             }
             is FirebaseResult.Error -> {
@@ -92,7 +95,8 @@ private fun PerfilContenido(
     onMisEntradas: () -> Unit,
     onMisCompras: () -> Unit,
     onCambiarPassword: () -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    onPanelAdmin: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -158,6 +162,22 @@ private fun PerfilContenido(
                         color = BurdeosOscuro,
                         textAlign = TextAlign.Center
                     )
+                    if (usuario.esAdmin) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Surface(
+                            shape = RoundedCornerShape(2.dp),
+                            color = Burdeos
+                        ) {
+                            Text(
+                                text = "✦ ADMINISTRADOR",
+                                fontSize = 9.sp,
+                                letterSpacing = 2.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Crema,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
 
                     Text(
                         text = usuario.email,
@@ -201,6 +221,18 @@ private fun PerfilContenido(
         }
 
         // ── Sección: Cuenta ───────────────────────────────
+        if (usuario.esAdmin) {
+            item { SeccionTitulo("ADMINISTRACIÓN") }
+            item {
+                FilaAcceso(
+                    icono = Icons.Default.AdminPanelSettings,
+                    titulo = "Panel de administración",
+                    subtitulo = "Gestionar contenido de la app",
+                    onClick = onPanelAdmin,
+                    color = Burdeos
+                )
+            }
+        }
         item { SeccionTitulo("CUENTA") }
 
         item {
@@ -211,6 +243,7 @@ private fun PerfilContenido(
                     subtitulo = "Actualiza tu información personal.",
                     onClick = onEditarPerfil
                 )
+
                 FilaAcceso(
                     icono = Icons.Default.Logout,
                     titulo = "Cerrar sesión",

@@ -53,12 +53,12 @@ class UsuarioRepository {
                         ?.let {
                             java.text.SimpleDateFormat(
                                 "dd/MM/yyyy",
-                                java.util.Locale.getDefault()
-                            ).format(it)
-                        } ?: ""
+                                java.util.Locale.getDefault())
+                                .format(it)
+                        } ?: "",
+                    esAdmin = doc.getBoolean("esAdmin") ?: false
                 )
             )
-
         } catch (e: Exception) {
             FirebaseResult.Error(e.message ?: "Error al cargar el perfil")
         }

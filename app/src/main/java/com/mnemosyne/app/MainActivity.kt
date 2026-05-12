@@ -25,6 +25,11 @@ import com.mnemosyne.app.data.model.ItemCarrito
 import com.mnemosyne.app.data.model.Museo
 import com.mnemosyne.app.data.model.Noticia
 import com.mnemosyne.app.data.model.Stock
+import com.mnemosyne.app.ui.admin.AdminExposicionesScreen
+import com.mnemosyne.app.ui.admin.AdminNoticiasScreen
+import com.mnemosyne.app.ui.admin.AdminObrasScreen
+import com.mnemosyne.app.ui.admin.AdminScreen
+import com.mnemosyne.app.ui.admin.AdminStockScreen
 import com.mnemosyne.app.ui.auth.AuthViewModel
 import com.mnemosyne.app.ui.auth.LoginScreen
 import com.mnemosyne.app.ui.auth.RegistroScreen
@@ -442,6 +447,9 @@ fun AppNavHost(
                 onMisEntradas     = { navController.navigate("mis_entradas") },
                 onMisCompras      = { navController.navigate("mis_compras") },
                 onCambiarPassword = { },
+                onPanelAdmin = {
+                    navController.navigate("admin")
+                },
                 onCerrarSesion    = {
                     authViewModel.cerrarSesion()
                     navController.navigate("login") {
@@ -471,6 +479,28 @@ fun AppNavHost(
             EditarPerfilScreen(
                 onVolver = { navController.popBackStack() }
             )
+        }
+
+        composable("admin") {
+            AdminScreen(
+                onVolver = { navController.popBackStack() },
+                onGestionarExposiciones = { navController.navigate("admin_exposiciones") },
+                onGestionarNoticias = { navController.navigate("admin_noticias") },
+                onGestionarObras = { navController.navigate("admin_obras") },
+                onGestionarStock = { navController.navigate("admin_stock") }
+            )
+        }
+        composable("admin_exposiciones") {
+            AdminExposicionesScreen(onVolver = { navController.popBackStack() })
+        }
+        composable("admin_noticias") {
+            AdminNoticiasScreen(onVolver = { navController.popBackStack() })
+        }
+        composable("admin_obras") {
+            AdminObrasScreen(onVolver = { navController.popBackStack() })
+        }
+        composable("admin_stock") {
+            AdminStockScreen(onVolver = { navController.popBackStack() })
         }
     }
 }

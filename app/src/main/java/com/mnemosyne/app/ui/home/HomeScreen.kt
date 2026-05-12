@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mnemosyne.app.data.model.Exposicion
 import com.mnemosyne.app.data.model.Noticia
+import com.mnemosyne.app.ui.CuriosidadDelDia.CuriosidadDelDiaBoton
 import com.mnemosyne.app.ui.theme.*
 import com.mnemosyne.app.utils.FirebaseResult
 
@@ -49,69 +50,122 @@ fun HomeScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onAbrirMenu) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Crema)
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = "Menú",
+                            tint = Crema
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Burdeos)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Burdeos
+                )
             )
         },
         containerColor = Superficie
     ) { innerPadding ->
-        LazyColumn(
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            item { SeccionTitulo("EXPOSICIONES DESTACADAS") }
 
-            when (val state = exposicionesState) {
-                is FirebaseResult.Loading -> item {
-                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Burdeos)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
+
+                item {
+                    SeccionTitulo("EXPOSICIONES DESTACADAS")
+                }
+
+                when (val state = exposicionesState) {
+
+                    is FirebaseResult.Loading -> item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Burdeos)
+                        }
                     }
-                }
-                is FirebaseResult.Success -> items(state.data) { exposicion ->
-                    TarjetaExposicion(exposicion)
-                }
-                is FirebaseResult.Error -> item {
-                    Text(state.mensaje, color = MaterialTheme.colorScheme.error)
-                }
-                null -> {}
-            }
 
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                SeccionTitulo("ÚLTIMAS NOTICIAS")
-            }
-
-            when (val state = noticiasState) {
-                is FirebaseResult.Loading -> item {
-                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Burdeos)
+                    is FirebaseResult.Success -> {
+                        items(state.data) { exposicion ->
+                            TarjetaExposicion(exposicion)
+                        }
                     }
+
+                    is FirebaseResult.Error -> item {
+                        Text(
+                            text = state.mensaje,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    null -> {}
                 }
-                is FirebaseResult.Success -> items(state.data) { noticia ->
-                    TarjetaNoticia(noticia)
+
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SeccionTitulo("ÚLTIMAS NOTICIAS")
                 }
-                is FirebaseResult.Error -> item {
-                    Text(state.mensaje, color = MaterialTheme.colorScheme.error)
+
+                when (val state = noticiasState) {
+
+                    is FirebaseResult.Loading -> item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Burdeos)
+                        }
+                    }
+
+                    is FirebaseResult.Success -> {
+                        items(state.data) { noticia ->
+                            TarjetaNoticia(noticia)
+                        }
+                    }
+
+                    is FirebaseResult.Error -> item {
+                        Text(
+                            text = state.mensaje,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    null -> {}
                 }
-                null -> {}
             }
+
+            CuriosidadDelDiaBoton(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .navigationBarsPadding()
+            )
         }
     }
 }
 
 @Composable
 fun SeccionTitulo(texto: String) {
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        HorizontalDivider(modifier = Modifier.weight(1f), color = DoradoSuave)
+
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = DoradoSuave
+        )
+
         Text(
             text = "  $texto  ",
             fontSize = 11.sp,
@@ -119,19 +173,32 @@ fun SeccionTitulo(texto: String) {
             letterSpacing = 2.sp,
             color = TextoSuave
         )
-        HorizontalDivider(modifier = Modifier.weight(1f), color = DoradoSuave)
+
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = DoradoSuave
+        )
     }
 }
 
 @Composable
 fun TarjetaExposicion(exposicion: Exposicion) {
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(2.dp),
-        colors = CardDefaults.cardColors(containerColor = Crema),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = Crema
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
             Text(
                 text = exposicion.museoNombre.uppercase(),
                 fontSize = 10.sp,
@@ -139,14 +206,18 @@ fun TarjetaExposicion(exposicion: Exposicion) {
                 color = Dorado,
                 fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = exposicion.titulo,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = BurdeosOscuro
             )
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = "${exposicion.fechaInicio}  —  ${exposicion.fechaFin}",
                 fontSize = 11.sp,
@@ -159,13 +230,22 @@ fun TarjetaExposicion(exposicion: Exposicion) {
 
 @Composable
 fun TarjetaNoticia(noticia: Noticia) {
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(2.dp),
-        colors = CardDefaults.cardColors(containerColor = Crema),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = Crema
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
             Text(
                 text = noticia.museoNombre.uppercase(),
                 fontSize = 10.sp,
@@ -173,14 +253,18 @@ fun TarjetaNoticia(noticia: Noticia) {
                 color = Dorado,
                 fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = noticia.titulo,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = BurdeosOscuro
             )
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = noticia.fecha,
                 fontSize = 11.sp,
